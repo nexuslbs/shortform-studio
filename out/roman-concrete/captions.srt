@@ -1,0 +1,23 @@
+1
+00:00:00,000 --> 00:00:06,000
+Rome's harbour walls have taken two thousand years of salt and storm, and many are still standing.
+
+2
+00:00:06,000 --> 00:00:11,000
+Modern concrete poured for the same job can crack apart in fifty.
+
+3
+00:00:11,000 --> 00:00:17,500
+The Roman recipe was volcanic ash, quicklime, and seawater.
+
+4
+00:00:17,500 --> 00:00:24,500
+That mixture slowly grew rare crystals, aluminous tobermorite, that knitted the mortar together.
+
+5
+00:00:24,500 --> 00:00:30,500
+The salt that rusts modern steel was actually feeding the Roman chemistry.
+
+6
+00:00:30,500 --> 00:00:37,500
+Engineers now study those ancient recipes to design concrete that lasts.

@@ -1,0 +1,666 @@
+{
+  "slug": "roman-concrete",
+  "generated_at": "2026-09-27T04:20:45Z",
+  "tools": {
+    "ffmpeg": "/usr/bin/ffmpeg",
+    "ffprobe": "/usr/bin/ffprobe",
+    "tts_cmd": "espeak-ng -v en-us -s 155 -w {out} {text}"
+  },
+  "inputs": [
+    {
+      "role": "script",
+      "path": "/opt/workspace/shortform-studio/content/roman-concrete/script.json",
+      "sha256": "b79fcb318beb925a92cf649c5456f78e8661f5589b390b364c3639f404067bf0",
+      "sha256_text": "b79fcb318beb925a92cf649c5456f78e8661f5589b390b364c3639f404067bf0"
+    }
+  ],
+  "commands": [
+    {
+      "argv": [
+        "/bin/sh",
+        "-c",
+        "espeak-ng -v en-us -s 155 -w /opt/workspace/shortform-studio/out/roman-concrete/audio/scene_01_raw.wav 'Rome'\"'\"'s harbour walls have taken two thousand years of salt and storm, and many are still standing.'"
+      ],
+      "cwd": "/opt/workspace/shortform-studio",
+      "exit_code": 0,
+      "started_at": "2026-09-27T04:20:45Z",
+      "duration_s": 0.016
+    },
+    {
+      "argv": [
+        "ffmpeg",
+        "-y",
+        "-hide_banner",
+        "-loglevel",
+        "error",
+        "-i",
+        "/opt/workspace/shortform-studio/out/roman-concrete/audio/scene_01_raw.wav",
+        "-af",
+        "apad",
+        "-t",
+        "6.000",
+        "-ar",
+        "48000",
+        "-ac",
+        "2",
+        "-c:a",
+        "pcm_s16le",
+        "/opt/workspace/shortform-studio/out/roman-concrete/audio/scene_01.wav"
+      ],
+      "cwd": "/opt/workspace/shortform-studio",
+      "exit_code": 0,
+      "started_at": "2026-09-27T04:20:45Z",
+      "duration_s": 0.079
+    },
+    {
+      "argv": [
+        "/bin/sh",
+        "-c",
+        "espeak-ng -v en-us -s 155 -w /opt/workspace/shortform-studio/out/roman-concrete/audio/scene_02_raw.wav 'Modern concrete poured for the same job can crack apart in fifty.'"
+      ],
+      "cwd": "/opt/workspace/shortform-studio",
+      "exit_code": 0,
+      "started_at": "2026-09-27T04:20:45Z",
+      "duration_s": 0.013
+    },
+    {
+      "argv": [
+        "ffmpeg",
+        "-y",
+        "-hide_banner",
+        "-loglevel",
+        "error",
+        "-i",
+        "/opt/workspace/shortform-studio/out/roman-concrete/audio/scene_02_raw.wav",
+        "-af",
+        "apad",
+        "-t",
+        "5.000",
+        "-ar",
+        "48000",
+        "-ac",
+        "2",
+        "-c:a",
+        "pcm_s16le",
+        "/opt/workspace/shortform-studio/out/roman-concrete/audio/scene_02.wav"
+      ],
+      "cwd": "/opt/workspace/shortform-studio",
+      "exit_code": 0,
+      "started_at": "2026-09-27T04:20:45Z",
+      "duration_s": 0.077
+    },
+    {
+      "argv": [
+        "/bin/sh",
+        "-c",
+        "espeak-ng -v en-us -s 155 -w /opt/workspace/shortform-studio/out/roman-concrete/audio/scene_03_raw.wav 'The Roman recipe was volcanic ash, quicklime, and seawater.'"
+      ],
+      "cwd": "/opt/workspace/shortform-studio",
+      "exit_code": 0,
+      "started_at": "2026-09-27T04:20:45Z",
+      "duration_s": 0.013
+    },
+    {
+      "argv": [
+        "ffmpeg",
+        "-y",
+        "-hide_banner",
+        "-loglevel",
+        "error",
+        "-i",
+        "/opt/workspace/shortform-studio/out/roman-concrete/audio/scene_03_raw.wav",
+        "-af",
+        "apad",
+        "-t",
+        "6.500",
+        "-ar",
+        "48000",
+        "-ac",
+        "2",
+        "-c:a",
+        "pcm_s16le",
+        "/opt/workspace/shortform-studio/out/roman-concrete/audio/scene_03.wav"
+      ],
+      "cwd": "/opt/workspace/shortform-studio",
+      "exit_code": 0,
+      "started_at": "2026-09-27T04:20:45Z",
+      "duration_s": 0.08
+    },
+    {
+      "argv": [
+        "/bin/sh",
+        "-c",
+        "espeak-ng -v en-us -s 155 -w /opt/workspace/shortform-studio/out/roman-concrete/audio/scene_04_raw.wav 'That mixture slowly grew rare crystals, aluminous tobermorite, that knitted the mortar together.'"
+      ],
+      "cwd": "/opt/workspace/shortform-studio",
+      "exit_code": 0,
+      "started_at": "2026-09-27T04:20:46Z",
+      "duration_s": 0.015
+    },
+    {
+      "argv": [
+        "ffmpeg",
+        "-y",
+        "-hide_banner",
+        "-loglevel",
+        "error",
+        "-i",
+        "/opt/workspace/shortform-studio/out/roman-concrete/audio/scene_04_raw.wav",
+        "-af",
+        "apad",
+        "-t",
+        "7.000",
+        "-ar",
+        "48000",
+        "-ac",
+        "2",
+        "-c:a",
+        "pcm_s16le",
+        "/opt/workspace/shortform-studio/out/roman-concrete/audio/scene_04.wav"
+      ],
+      "cwd": "/opt/workspace/shortform-studio",
+      "exit_code": 0,
+      "started_at": "2026-09-27T04:20:46Z",
+      "duration_s": 0.08
+    },
+    {
+      "argv": [
+        "/bin/sh",
+        "-c",
+        "espeak-ng -v en-us -s 155 -w /opt/workspace/shortform-studio/out/roman-concrete/audio/scene_05_raw.wav 'The salt that rusts modern steel was actually feeding the Roman chemistry.'"
+      ],
+      "cwd": "/opt/workspace/shortform-studio",
+      "exit_code": 0,
+      "started_at": "2026-09-27T04:20:46Z",
+      "duration_s": 0.013
+    },
+    {
+      "argv": [
+        "ffmpeg",
+        "-y",
+        "-hide_banner",
+        "-loglevel",
+        "error",
+        "-i",
+        "/opt/workspace/shortform-studio/out/roman-concrete/audio/scene_05_raw.wav",
+        "-af",
+        "apad",
+        "-t",
+        "6.000",
+        "-ar",
+        "48000",
+        "-ac",
+        "2",
+        "-c:a",
+        "pcm_s16le",
+        "/opt/workspace/shortform-studio/out/roman-concrete/audio/scene_05.wav"
+      ],
+      "cwd": "/opt/workspace/shortform-studio",
+      "exit_code": 0,
+      "started_at": "2026-09-27T04:20:46Z",
+      "duration_s": 0.078
+    },
+    {
+      "argv": [
+        "/bin/sh",
+        "-c",
+        "espeak-ng -v en-us -s 155 -w /opt/workspace/shortform-studio/out/roman-concrete/audio/scene_06_raw.wav 'Engineers now study those ancient recipes to design concrete that lasts.'"
+      ],
+      "cwd": "/opt/workspace/shortform-studio",
+      "exit_code": 0,
+      "started_at": "2026-09-27T04:20:46Z",
+      "duration_s": 0.014
+    },
+    {
+      "argv": [
+        "ffmpeg",
+        "-y",
+        "-hide_banner",
+        "-loglevel",
+        "error",
+        "-i",
+        "/opt/workspace/shortform-studio/out/roman-concrete/audio/scene_06_raw.wav",
+        "-af",
+        "apad",
+        "-t",
+        "7.000",
+        "-ar",
+        "48000",
+        "-ac",
+        "2",
+        "-c:a",
+        "pcm_s16le",
+        "/opt/workspace/shortform-studio/out/roman-concrete/audio/scene_06.wav"
+      ],
+      "cwd": "/opt/workspace/shortform-studio",
+      "exit_code": 0,
+      "started_at": "2026-09-27T04:20:46Z",
+      "duration_s": 0.083
+    },
+    {
+      "argv": [
+        "ffmpeg",
+        "-y",
+        "-hide_banner",
+        "-loglevel",
+        "error",
+        "-f",
+        "concat",
+        "-safe",
+        "0",
+        "-i",
+        "/opt/workspace/shortform-studio/out/roman-concrete/tmp/audio_concat.txt",
+        "-c",
+        "copy",
+        "/opt/workspace/shortform-studio/out/roman-concrete/audio/voice.wav"
+      ],
+      "cwd": "/opt/workspace/shortform-studio",
+      "exit_code": 0,
+      "started_at": "2026-09-27T04:20:46Z",
+      "duration_s": 0.117
+    },
+    {
+      "argv": [
+        "ffmpeg",
+        "-y",
+        "-hide_banner",
+        "-loglevel",
+        "error",
+        "-loop",
+        "1",
+        "-framerate",
+        "30",
+        "-t",
+        "6.000",
+        "-i",
+        "/opt/workspace/shortform-studio/out/roman-concrete/graphics/scene_01.png",
+        "-vf",
+        "setsar=1",
+        "-c:v",
+        "libx264",
+        "-preset",
+        "ultrafast",
+        "-threads",
+        "1",
+        "-crf",
+        "23",
+        "-pix_fmt",
+        "yuv420p",
+        "-r",
+        "30",
+        "-an",
+        "/opt/workspace/shortform-studio/out/roman-concrete/tmp/scene_01.mp4"
+      ],
+      "cwd": "/opt/workspace/shortform-studio",
+      "exit_code": 0,
+      "started_at": "2026-09-27T04:20:49Z",
+      "duration_s": 2.404
+    },
+    {
+      "argv": [
+        "ffmpeg",
+        "-y",
+        "-hide_banner",
+        "-loglevel",
+        "error",
+        "-loop",
+        "1",
+        "-framerate",
+        "30",
+        "-t",
+        "5.000",
+        "-i",
+        "/opt/workspace/shortform-studio/out/roman-concrete/graphics/scene_02.png",
+        "-vf",
+        "setsar=1",
+        "-c:v",
+        "libx264",
+        "-preset",
+        "ultrafast",
+        "-threads",
+        "1",
+        "-crf",
+        "23",
+        "-pix_fmt",
+        "yuv420p",
+        "-r",
+        "30",
+        "-an",
+        "/opt/workspace/shortform-studio/out/roman-concrete/tmp/scene_02.mp4"
+      ],
+      "cwd": "/opt/workspace/shortform-studio",
+      "exit_code": 0,
+      "started_at": "2026-09-27T04:20:51Z",
+      "duration_s": 2.043
+    },
+    {
+      "argv": [
+        "ffmpeg",
+        "-y",
+        "-hide_banner",
+        "-loglevel",
+        "error",
+        "-loop",
+        "1",
+        "-framerate",
+        "30",
+        "-t",
+        "6.500",
+        "-i",
+        "/opt/workspace/shortform-studio/out/roman-concrete/graphics/scene_03.png",
+        "-vf",
+        "setsar=1",
+        "-c:v",
+        "libx264",
+        "-preset",
+        "ultrafast",
+        "-threads",
+        "1",
+        "-crf",
+        "23",
+        "-pix_fmt",
+        "yuv420p",
+        "-r",
+        "30",
+        "-an",
+        "/opt/workspace/shortform-studio/out/roman-concrete/tmp/scene_03.mp4"
+      ],
+      "cwd": "/opt/workspace/shortform-studio",
+      "exit_code": 0,
+      "started_at": "2026-09-27T04:20:53Z",
+      "duration_s": 2.513
+    },
+    {
+      "argv": [
+        "ffmpeg",
+        "-y",
+        "-hide_banner",
+        "-loglevel",
+        "error",
+        "-loop",
+        "1",
+        "-framerate",
+        "30",
+        "-t",
+        "7.000",
+        "-i",
+        "/opt/workspace/shortform-studio/out/roman-concrete/graphics/scene_04.png",
+        "-vf",
+        "setsar=1",
+        "-c:v",
+        "libx264",
+        "-preset",
+        "ultrafast",
+        "-threads",
+        "1",
+        "-crf",
+        "23",
+        "-pix_fmt",
+        "yuv420p",
+        "-r",
+        "30",
+        "-an",
+        "/opt/workspace/shortform-studio/out/roman-concrete/tmp/scene_04.mp4"
+      ],
+      "cwd": "/opt/workspace/shortform-studio",
+      "exit_code": 0,
+      "started_at": "2026-09-27T04:20:56Z",
+      "duration_s": 2.784
+    },
+    {
+      "argv": [
+        "ffmpeg",
+        "-y",
+        "-hide_banner",
+        "-loglevel",
+        "error",
+        "-loop",
+        "1",
+        "-framerate",
+        "30",
+        "-t",
+        "6.000",
+        "-i",
+        "/opt/workspace/shortform-studio/out/roman-concrete/graphics/scene_05.png",
+        "-vf",
+        "setsar=1",
+        "-c:v",
+        "libx264",
+        "-preset",
+        "ultrafast",
+        "-threads",
+        "1",
+        "-crf",
+        "23",
+        "-pix_fmt",
+        "yuv420p",
+        "-r",
+        "30",
+        "-an",
+        "/opt/workspace/shortform-studio/out/roman-concrete/tmp/scene_05.mp4"
+      ],
+      "cwd": "/opt/workspace/shortform-studio",
+      "exit_code": 0,
+      "started_at": "2026-09-27T04:20:59Z",
+      "duration_s": 2.299
+    },
+    {
+      "argv": [
+        "ffmpeg",
+        "-y",
+        "-hide_banner",
+        "-loglevel",
+        "error",
+        "-loop",
+        "1",
+        "-framerate",
+        "30",
+        "-t",
+        "7.000",
+        "-i",
+        "/opt/workspace/shortform-studio/out/roman-concrete/graphics/scene_06.png",
+        "-vf",
+        "setsar=1",
+        "-c:v",
+        "libx264",
+        "-preset",
+        "ultrafast",
+        "-threads",
+        "1",
+        "-crf",
+        "23",
+        "-pix_fmt",
+        "yuv420p",
+        "-r",
+        "30",
+        "-an",
+        "/opt/workspace/shortform-studio/out/roman-concrete/tmp/scene_06.mp4"
+      ],
+      "cwd": "/opt/workspace/shortform-studio",
+      "exit_code": 0,
+      "started_at": "2026-09-27T04:21:01Z",
+      "duration_s": 2.809
+    },
+    {
+      "argv": [
+        "ffmpeg",
+        "-y",
+        "-hide_banner",
+        "-loglevel",
+        "error",
+        "-f",
+        "concat",
+        "-safe",
+        "0",
+        "-i",
+        "/opt/workspace/shortform-studio/out/roman-concrete/tmp/video_concat.txt",
+        "-c",
+        "copy",
+        "/opt/workspace/shortform-studio/out/roman-concrete/tmp/video_silent.mp4"
+      ],
+      "cwd": "/opt/workspace/shortform-studio",
+      "exit_code": 0,
+      "started_at": "2026-09-27T04:21:04Z",
+      "duration_s": 0.124
+    },
+    {
+      "argv": [
+        "ffmpeg",
+        "-y",
+        "-hide_banner",
+        "-loglevel",
+        "error",
+        "-i",
+        "/opt/workspace/shortform-studio/out/roman-concrete/tmp/video_silent.mp4",
+        "-i",
+        "/opt/workspace/shortform-studio/out/roman-concrete/audio/voice_normalized.wav",
+        "-i",
+        "/opt/workspace/shortform-studio/out/roman-concrete/captions.srt",
+        "-map",
+        "0:v:0",
+        "-map",
+        "1:a:0",
+        "-map",
+        "2:s:0",
+        "-c:v",
+        "copy",
+        "-c:a",
+        "aac",
+        "-ar",
+        "48000",
+        "-ac",
+        "2",
+        "-b:a",
+        "192k",
+        "-c:s",
+        "mov_text",
+        "-t",
+        "37.500",
+        "-movflags",
+        "+faststart",
+        "/opt/workspace/shortform-studio/out/roman-concrete/video.mp4"
+      ],
+      "cwd": "/opt/workspace/shortform-studio",
+      "exit_code": 0,
+      "started_at": "2026-09-27T04:21:04Z",
+      "duration_s": 2.687
+    }
+  ],
+  "outputs": [
+    {
+      "role": "graphic_01",
+      "path": "/opt/workspace/shortform-studio/out/roman-concrete/graphics/scene_01.png",
+      "sha256": "fa5f643eda7e7aa25ed48840e0023e5189149783bca4f50201d9b49fa7a48c2f",
+      "bytes": 109900
+    },
+    {
+      "role": "graphic_02",
+      "path": "/opt/workspace/shortform-studio/out/roman-concrete/graphics/scene_02.png",
+      "sha256": "d37de00ee8ff5e70fa725053dbc3c8f907d183d778a3c3ed3ce9b3c7a088bc48",
+      "bytes": 121491
+    },
+    {
+      "role": "graphic_03",
+      "path": "/opt/workspace/shortform-studio/out/roman-concrete/graphics/scene_03.png",
+      "sha256": "04c8276e601b9aba338a6f1c81f3b35219f515a701c9ab8e4ebb6c2a24bbf258",
+      "bytes": 108057
+    },
+    {
+      "role": "graphic_04",
+      "path": "/opt/workspace/shortform-studio/out/roman-concrete/graphics/scene_04.png",
+      "sha256": "0f3fa78c6393ebcd2a1e06c5cba1afe0a80c980cdb034226e1b23b8c7a9406da",
+      "bytes": 107107
+    },
+    {
+      "role": "graphic_05",
+      "path": "/opt/workspace/shortform-studio/out/roman-concrete/graphics/scene_05.png",
+      "sha256": "b9c46df0b7626cde9a9a5baff6e665ac65661399c4c86231c7f342cf2f9b3e20",
+      "bytes": 113854
+    },
+    {
+      "role": "graphic_06",
+      "path": "/opt/workspace/shortform-studio/out/roman-concrete/graphics/scene_06.png",
+      "sha256": "52bd1f35d3011158ad17cfd2481b19afa91ba335c29e10bf6698e8c5cb0da903",
+      "bytes": 114859
+    },
+    {
+      "role": "tts_raw_01",
+      "path": "/opt/workspace/shortform-studio/out/roman-concrete/audio/scene_01_raw.wav",
+      "sha256": "651d915b4ac2a62e65de7e78fa18b992c33963ddccd0fce22b1406a7337ead13",
+      "bytes": 295688
+    },
+    {
+      "role": "tts_raw_02",
+      "path": "/opt/workspace/shortform-studio/out/roman-concrete/audio/scene_02_raw.wav",
+      "sha256": "8767f6111eba0ede00085531f929971a46dbb992d7bce44e2bfa3c470cba9cad",
+      "bytes": 195344
+    },
+    {
+      "role": "tts_raw_03",
+      "path": "/opt/workspace/shortform-studio/out/roman-concrete/audio/scene_03_raw.wav",
+      "sha256": "7739a0d520dbc2a07ae487d7e223b74cea64899fb982e1cfef97ac68454cc30c",
+      "bytes": 190816
+    },
+    {
+      "role": "tts_raw_04",
+      "path": "/opt/workspace/shortform-studio/out/roman-concrete/audio/scene_04_raw.wav",
+      "sha256": "32d5e5812c6257b1499fe7997de4b78b54fc76315e2bf63004afa2da101cefe3",
+      "bytes": 261530
+    },
+    {
+      "role": "tts_raw_05",
+      "path": "/opt/workspace/shortform-studio/out/roman-concrete/audio/scene_05_raw.wav",
+      "sha256": "e5560b3bd47e0540fa789900d6f0c55331413d9888bc18ae066ecf24fa0023d4",
+      "bytes": 204140
+    },
+    {
+      "role": "tts_raw_06",
+      "path": "/opt/workspace/shortform-studio/out/roman-concrete/audio/scene_06_raw.wav",
+      "sha256": "212991c0b6ac60c50f6ee3f9a110c29e30f4108fae92118143b0815be98a690c",
+      "bytes": 214240
+    },
+    {
+      "role": "voice_raw",
+      "path": "/opt/workspace/shortform-studio/out/roman-concrete/audio/voice.wav",
+      "sha256": "96d78c37f7a2b128f6c5f3f5cde1fd6ab55642cc2c655c94efaf21288b27009f",
+      "bytes": 7200078
+    },
+    {
+      "role": "voice_normalized",
+      "path": "/opt/workspace/shortform-studio/out/roman-concrete/audio/voice_normalized.wav",
+      "sha256": "d6a773a436626450edfbe908df1ce4d6dfcaa64e049482eff956b0cc501ece33",
+      "bytes": 7200078
+    },
+    {
+      "role": "captions",
+      "path": "/opt/workspace/shortform-studio/out/roman-concrete/captions.srt",
+      "sha256": "f409a9e30e8e2d2f8786c88082711bb84093282829d3ac73cc1c1564bbc25102",
+      "bytes": 667
+    },
+    {
+      "role": "video",
+      "path": "/opt/workspace/shortform-studio/out/roman-concrete/video.mp4",
+      "sha256": "9ce0e04ef5fe79fb27ec10fd2eb16efedc024b9dbe48d1c62827b45f8dfff206",
+      "bytes": 2404763
+    },
+    {
+      "role": "title",
+      "path": "/opt/workspace/shortform-studio/out/roman-concrete/title.txt",
+      "sha256": "6796f284cad2e7656269f265c9b7a512386e23e9f9fd4ba26dbe6432ef538e32",
+      "bytes": 39
+    },
+    {
+      "role": "description",
+      "path": "/opt/workspace/shortform-studio/out/roman-concrete/description.txt",
+      "sha256": "f128d0c0cc86bbfec21bcb63df52ed267359bcbf7cf94ec08cffc61f71efb71e",
+      "bytes": 518
+    },
+    {
+      "role": "metadata",
+      "path": "/opt/workspace/shortform-studio/out/roman-concrete/metadata.json",
+      "sha256": "61906969c2c4e0b4d99b7f92c9d7b3bc954589ff6a7ba59a2248516c9a20327c",
+      "bytes": 1253
+    }
+  ],
+  "intermediates_note": "audio/ and tmp/ intermediates are deleted after muxing to keep the repository small; the hashes above were computed while they existed."
+}

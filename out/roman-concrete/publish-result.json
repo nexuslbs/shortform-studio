@@ -1,0 +1,23 @@
+{
+  "slug": "roman-concrete",
+  "uploaded_at": "2026-09-27T04:21:09Z",
+  "api_base": "http://127.0.0.1:8787",
+  "privacy_status": "private",
+  "http_status": 200,
+  "video": "/opt/workspace/shortform-studio/out/roman-concrete/video.mp4",
+  "bytes": 2404763,
+  "video_id": "MOCKID123",
+  "response": {
+    "kind": "youtube#video",
+    "etag": "mock-etag",
+    "id": "MOCKID123",
+    "snippet": {
+      "title": "Mock Upload",
+      "channelId": "MOCKCHANNEL"
+    },
+    "status": {
+      "privacyStatus": "private",
+      "uploadStatus": "uploaded"
+    }
+  }
+}
