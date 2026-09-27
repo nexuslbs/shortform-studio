@@ -1,0 +1,54 @@
+{
+  "topic": "How Roman concrete survived 2000 years",
+  "label": "ROMAN CONCRETE",
+  "title": "How Roman Concrete Survived 2000 Years",
+  "summary": "Roman harbour concrete has outlasted two thousand years of salt and storm, while modern concrete often fails within decades. This short explains the volcanic-ash recipe that let seawater grow strengthening minerals inside Roman mortar.",
+  "categoryId": "27",
+  "tags": [
+    "roman concrete",
+    "ancient rome",
+    "engineering",
+    "materials science",
+    "history",
+    "shorts"
+  ],
+  "hashtags": ["#Shorts", "#RomanConcrete", "#Engineering", "#History", "#Materials"],
+  "narration": [
+    {
+      "scene": 1,
+      "say": "Rome's harbour walls have taken two thousand years of salt and storm, and many are still standing.",
+      "onscreen": "2000 YEARS AT SEA",
+      "hold": 6.0
+    },
+    {
+      "scene": 2,
+      "say": "Modern concrete poured for the same job can crack apart in fifty.",
+      "onscreen": "50 YEARS, THEN CRACKS",
+      "hold": 5.0
+    },
+    {
+      "scene": 3,
+      "say": "The Roman recipe was volcanic ash, quicklime, and seawater.",
+      "onscreen": "ASH + LIME + SEAWATER",
+      "hold": 6.5
+    },
+    {
+      "scene": 4,
+      "say": "That mixture slowly grew rare crystals, aluminous tobermorite, that knitted the mortar together.",
+      "onscreen": "CRYSTALS THAT KNIT",
+      "hold": 7.0
+    },
+    {
+      "scene": 5,
+      "say": "The salt that rusts modern steel was actually feeding the Roman chemistry.",
+      "onscreen": "SALT BECAME STRENGTH",
+      "hold": 6.0
+    },
+    {
+      "scene": 6,
+      "say": "Engineers now study those ancient recipes to design concrete that lasts.",
+      "onscreen": "RECIPES FOR DURABILITY",
+      "hold": 7.0
+    }
+  ]
+}
