@@ -10,6 +10,7 @@ from .measure import DEFAULT_MOCK_BASE, REAL_API_BASE as MEASURE_API_BASE, measu
 from .produce import produce
 from .publish import PRIVACY_CHOICES, REAL_API_BASE as PUBLISH_API_BASE, publish
 from .qa import print_report, run_qa
+from .util import NetworkError
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -82,6 +83,9 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         return int(args.func(args))
+    except NetworkError as exc:
+        print(f"[NETWORK ERROR] {exc}", file=sys.stderr)
+        return 3
     except (FileNotFoundError, ValueError, RuntimeError) as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 3

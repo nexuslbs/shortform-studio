@@ -25,6 +25,9 @@ from . import util
 REAL_API_BASE = "https://www.googleapis.com"
 UPLOAD_PATH = "/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status"
 PRIVACY_CHOICES = ("private", "unlisted", "public")
+# Explicit marker for a missing token. It must never be masked as if it were a
+# real credential, so the dry-run clearly shows that nothing is configured.
+NO_TOKEN_MARKER = "<YOUTUBE_OAUTH_TOKEN NOT SET>"
 
 HANDOVER_MESSAGE = """\
 [HUMAN HANDOVER REQUIRED] Cannot publish live: $YOUTUBE_OAUTH_TOKEN is not set.
@@ -67,6 +70,10 @@ def _http(
             return resp.status, dict(resp.headers.items()), resp.read()
     except urllib.error.HTTPError as err:  # pragma: no cover - network path
         return err.code, dict(err.headers.items()) if err.headers else {}, err.read()
+    except (urllib.error.URLError, OSError) as err:  # pragma: no cover - network path
+        # DNS failure, refused connection, timeout, TLS error, ...: surface a
+        # clean one-line network error instead of a raw traceback.
+        raise util.NetworkError(f"{method} {url}: {err}") from err
 
 
 def _redact_headers(headers: dict[str, str]) -> dict[str, str]:
@@ -74,7 +81,12 @@ def _redact_headers(headers: dict[str, str]) -> dict[str, str]:
     for key, value in headers.items():
         if key.lower() == "authorization":
             token = value.split(" ", 1)[-1]
-            out[key] = f"Bearer <redacted:{len(token)} chars>"
+            if token == NO_TOKEN_MARKER:
+                # The missing-token marker is not a secret: show it verbatim so
+                # an operator can tell that no token is configured.
+                out[key] = f"Bearer {NO_TOKEN_MARKER}"
+            else:
+                out[key] = f"Bearer <redacted:{len(token)} chars>"
         else:
             out[key] = value
     return out
@@ -110,7 +122,7 @@ def publish(
     token = os.environ.get("YOUTUBE_OAUTH_TOKEN", "").strip()
     upload_url = api_base.rstrip("/") + UPLOAD_PATH
     init_headers = {
-        "Authorization": f"Bearer {token}" if token else "Bearer <YOUTUBE_OAUTH_TOKEN NOT SET>",
+        "Authorization": f"Bearer {token}" if token else f"Bearer {NO_TOKEN_MARKER}",
         "Content-Type": "application/json; charset=UTF-8",
         "X-Upload-Content-Type": "video/mp4",
         "X-Upload-Content-Length": str(size),

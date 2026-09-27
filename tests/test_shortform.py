@@ -11,6 +11,8 @@ Run with:  python3 -m pytest tests/ -v
 from __future__ import annotations
 
 import json
+import os
+import socket
 import subprocess
 import sys
 import time
@@ -23,7 +25,7 @@ REPO = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO))
 
 from shortform import measure, produce, qa  # noqa: E402
-from shortform.publish import build_upload_body, _redact_headers  # noqa: E402
+from shortform.publish import build_upload_body, _redact_headers, publish  # noqa: E402
 
 
 # --------------------------------------------------------------------------- #
@@ -135,6 +137,76 @@ def test_redact_headers_hides_token():
     red = _redact_headers({"Authorization": "Bearer supersecrettoken"})
     assert "supersecrettoken" not in json.dumps(red)
     assert "redacted" in red["Authorization"]
+
+
+def test_redact_headers_keeps_missing_token_marker():
+    # F1: the missing-token marker is NOT a secret and must never be masked.
+    red = _redact_headers({"Authorization": "Bearer <YOUTUBE_OAUTH_TOKEN NOT SET>"})
+    assert red["Authorization"] == "Bearer <YOUTUBE_OAUTH_TOKEN NOT SET>"
+    assert "redacted" not in red["Authorization"]
+
+
+def test_dry_run_without_token_shows_not_set(monkeypatch, capsys):
+    # F1: a dry-run without $YOUTUBE_OAUTH_TOKEN must say so explicitly.
+    monkeypatch.delenv("YOUTUBE_OAUTH_TOKEN", raising=False)
+    assert publish("roman-concrete", mode="dry-run", root=REPO) == 0
+    out = capsys.readouterr().out
+    auth_lines = [
+        line.strip()
+        for line in out.splitlines()
+        if line.strip().lower().startswith("authorization")
+    ]
+    assert auth_lines == ["Authorization: Bearer <YOUTUBE_OAUTH_TOKEN NOT SET>"]
+    assert "redacted" not in "\n".join(auth_lines)
+
+
+def _dead_port() -> int:
+    """Return a TCP port that was bound and then closed (nothing listening)."""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.bind(("127.0.0.1", 0))
+        return sock.getsockname()[1]
+
+
+def _run_cli(args: list[str], env_extra: dict[str, str] | None = None) -> subprocess.CompletedProcess:
+    env = dict(os.environ)
+    env.update(env_extra or {})
+    return subprocess.run(
+        [sys.executable, "-m", "shortform", *args],
+        cwd=str(REPO),
+        capture_output=True,
+        text=True,
+        env=env,
+        timeout=30,
+    )
+
+
+def test_measure_network_error_exits_3_cleanly():
+    # F2: a dead host must not print a traceback; it exits 3 with one clean line.
+    port = _dead_port()
+    proc = _run_cli(
+        ["measure", "--video-id", "MOCKID123", "--api-base", f"http://127.0.0.1:{port}"],
+        {"YOUTUBE_API_KEY": "TESTKEY"},
+    )
+    combined = proc.stdout + proc.stderr
+    assert proc.returncode == 3, combined
+    assert "[NETWORK ERROR]" in proc.stderr
+    assert f"http://127.0.0.1:{port}" in proc.stderr
+    assert "Traceback" not in combined
+    assert "urllib.error.URLError" not in combined
+
+
+def test_publish_network_error_exits_3_cleanly():
+    # F2 for the publish path: live upload to an unreachable host exits 3 cleanly.
+    port = _dead_port()
+    proc = _run_cli(
+        ["publish", "--slug", "roman-concrete", "--live", "--api-base", f"http://127.0.0.1:{port}"],
+        {"YOUTUBE_OAUTH_TOKEN": "ya29.dummy-token"},
+    )
+    combined = proc.stdout + proc.stderr
+    assert proc.returncode == 3, combined
+    assert "[NETWORK ERROR]" in proc.stderr
+    assert f"http://127.0.0.1:{port}" in proc.stderr
+    assert "Traceback" not in combined
 
 
 # --------------------------------------------------------------------------- #

@@ -20,6 +20,16 @@ from pathlib import Path
 from typing import Any, Iterable, Sequence
 
 
+class NetworkError(RuntimeError):
+    """A non-HTTP network failure (DNS, refused connection, timeout, ...).
+
+    Raised by the HTTP helpers in ``measure``/``publish`` so the CLI can report a
+    single clean ``[NETWORK ERROR]`` line and exit 3 instead of dumping a raw
+    traceback. HTTP-level failures (``urllib.error.HTTPError``) are *not* wrapped
+    here; they carry a status code and are handled by the caller.
+    """
+
+
 # --------------------------------------------------------------------------- #
 # Paths
 # --------------------------------------------------------------------------- #

@@ -41,6 +41,10 @@ def _get(url: str, timeout: float = 30.0) -> tuple[int, bytes]:
             return resp.status, resp.read()
     except urllib.error.HTTPError as err:  # pragma: no cover - network path
         return err.code, err.read()
+    except (urllib.error.URLError, OSError) as err:  # pragma: no cover - network path
+        # DNS failure, refused connection, timeout, TLS error, ...: surface a
+        # clean one-line network error instead of a raw traceback.
+        raise util.NetworkError(f"GET {url}: {err}") from err
 
 
 def view_through_placeholder(stats: dict[str, Any]) -> float | None:
