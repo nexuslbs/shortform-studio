@@ -195,8 +195,10 @@ def test_provision_dry_run_cli_output():
     assert proc.returncode == 0, proc.stdout + proc.stderr
     out = proc.stdout
     assert "POST /products/" in out
-    assert "shortform-video-pack" in out
-    assert "shortform-creator-monthly" in out
+    assert "video-pack-roman-concrete" in out
+    assert "studio-monthly-4" in out
+    assert "shorts-bundle-3" in out
+    assert "caption-kit" in out
     assert '"recurring_interval": "month"' in out
     # a dry-run needs no credential at all
     assert "missing polar sandbox credential" not in (proc.stdout + proc.stderr)
@@ -213,3 +215,20 @@ def test_webhook_cli_rejects_bad_signature(tmp_path):
     })
     assert proc.returncode == 2, proc.stdout + proc.stderr
     assert '"status": 401' in proc.stdout
+
+
+def test_catalog_matches_the_storefront_site():
+    """The module catalog and storefront/catalog.json must not drift."""
+    site = json.loads((REPO / "storefront" / "catalog.json").read_text())
+    module = {spec["slug"]: spec for spec in billing.PRODUCTS}
+    site_items = {item["slug"]: item for item in site["items"]}
+    assert set(module) == set(site_items)
+    for slug, spec in module.items():
+        assert spec["price_cents"] == site_items[slug]["amount"], slug
+        assert spec["currency"] == site_items[slug]["currency"], slug
+        assert spec["recurring_interval"] == site_items[slug]["recurring_interval"], slug
+    pack = site_items["video-pack-roman-concrete"]["artifact"]
+    assert pack["bytes"] == 2404763
+    assert pack["duration_s"] == 37.5
+    assert pack["resolution"] == "1080x1920"
+    assert pack["qa"] == "17/17"

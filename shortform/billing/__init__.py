@@ -24,7 +24,7 @@ from .base import (
     WebhookEvent,
     iso_now,
 )
-from .polar import CATALOG, PolarBilling, build_product_body, resolve_api_key
+from .polar import CATALOG, PRODUCTS, PolarBilling, build_product_body, resolve_api_key
 
 DEFAULT_PROVIDER = "polar"
 ENV_PROVIDER = "SHORTFORM_BILLING_PROVIDER"
@@ -52,6 +52,7 @@ def get_billing(name: str = None, **kwargs):
 __all__ = [
     "BillingError",
     "CATALOG",
+    "PRODUCTS",
     "Checkout",
     "Order",
     "Price",

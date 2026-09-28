@@ -44,22 +44,55 @@ CREDENTIAL_STORE_NAME = "SANDBOX_POLAR_API_KEY_SHORTFORM_STUDIO"
 #: one recurring subscription; ``metadata.slug`` is the idempotency key.
 CATALOG = (
     {
-        "slug": "shortform-video-pack",
-        "name": "ShortForm Studio Video Pack",
-        "description": "One-time pack of policy-checked 9:16 short videos.",
+        "slug": "video-pack-roman-concrete",
+        "name": "ShortForm Studio Video Pack: Roman Concrete",
+        "description": (
+            "The rendered 9:16 short How Roman Concrete Survived 2000 Years: "
+            "H.264 1080x1920 with AAC audio, burnt captions, plus SRT, "
+            "description and metadata. Deterministic render, QA 17/17 PASS."
+        ),
+        "price_cents": 1900,
+        "currency": "usd",
+        "recurring_interval": None,
+    },
+    {
+        "slug": "shorts-bundle-3",
+        "name": "ShortForm Studio 3-Pack",
+        "description": (
+            "Three policy-checked 9:16 shorts rendered and QA-gated, each "
+            "with captions, title, description and metadata."
+        ),
+        "price_cents": 2900,
+        "currency": "usd",
+        "recurring_interval": None,
+    },
+    {
+        "slug": "caption-kit",
+        "name": "ShortForm Caption + Metadata Kit",
+        "description": (
+            "The caption, title, description and metadata kit for one short, "
+            "ready to paste into the channel."
+        ),
         "price_cents": 900,
         "currency": "usd",
         "recurring_interval": None,
     },
     {
-        "slug": "shortform-creator-monthly",
-        "name": "ShortForm Studio Creator",
-        "description": "Recurring monthly subscription for ongoing short-form output.",
+        "slug": "studio-monthly-4",
+        "name": "ShortForm Studio Monthly - 4 videos/month",
+        "description": (
+            "Four policy-checked shorts per month with captions, metadata and "
+            "the QA report for each render."
+        ),
         "price_cents": 2900,
         "currency": "usd",
         "recurring_interval": "month",
     },
 )
+
+#: Alias kept for callers that use the PRODUCTS name. The canonical catalog is
+#: the SAME slug/price set as storefront/catalog.json and the Worker catalog.
+PRODUCTS = CATALOG
 
 
 def resolve_api_key() -> str:
