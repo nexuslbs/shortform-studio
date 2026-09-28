@@ -6,8 +6,10 @@
 #
 # It runs:
 #   python3 -m shortform measure --video-id <VIDEO_ID> [--mock] [--api-base URL]
-# which appends one timestamped JSON line to data/metrics/<VIDEO_ID>.jsonl,
-# then it prints a one-line summary.
+# which appends one row per metric to the SQLite measurement_series table and
+# mirrors a timestamped JSON line to {data_root}/measurements/<VIDEO_ID>.jsonl,
+# then it prints a one-line summary. {data_root} is outside the repo:
+# $SHORTFORM_ARTIFACTS_DIR or {OMNI_DIR}/data/artifacts/shortform-studio.
 #
 # Guards against double runs:
 #   * at most one snapshot per video per UTC calendar day (override: --force)
@@ -44,7 +46,7 @@ done
 
 [ -n "$VIDEO_ID" ] || { echo "measure_daily: <VIDEO_ID> is required" >&2; exit 2; }
 
-METRICS_DIR="$REPO/data/metrics"
+METRICS_DIR="$("$PY" -c 'from shortform import paths; print(paths.measurements_dir())')"
 mkdir -p "$METRICS_DIR"
 JSONL="$METRICS_DIR/$VIDEO_ID.jsonl"
 MARK="$METRICS_DIR/$VIDEO_ID.daily"

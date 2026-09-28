@@ -2,7 +2,9 @@
 
 Uses ``GET /youtube/v3/videos?part=snippet,statistics&id=<ID>&key=$YOUTUBE_API_KEY``
 against the real API, or against the bundled mock with ``--mock`` (or an
-explicit ``--api-base``). Snapshots are appended to ``data/metrics/<id>.jsonl``.
+explicit ``--api-base``). Each numeric metric is appended to the
+``measurement_series`` table and the raw snapshot is mirrored to
+``{data_root}/measurements/<id>.jsonl`` (never the repo tree).
 """
 
 from __future__ import annotations
@@ -16,7 +18,7 @@ import urllib.request
 from pathlib import Path
 from typing import Any
 
-from . import util
+from . import paths, store, util
 
 REAL_API_BASE = "https://www.googleapis.com"
 DEFAULT_MOCK_BASE = os.environ.get("MOCK_API_BASE", "http://127.0.0.1:8787")
@@ -72,7 +74,10 @@ def measure(
     mock: bool = False,
     api_base: str | None = None,
     root: Path | None = None,
+    artifacts_root: Path | None = None,
 ) -> int:
+    # ``root`` is the SOURCE repository root; ``artifacts_root`` is an explicit
+    # data-root override for tests. Snapshots always land outside the repo.
     root = root or util.repo_root()
     base = api_base or (DEFAULT_MOCK_BASE if mock else REAL_API_BASE)
 
@@ -116,10 +121,32 @@ def measure(
             "view-through rate requires the YouTube Analytics API (OAuth)."
         ),
     }
-    metrics_path = root / "data" / "metrics" / f"{video_id}.jsonl"
+    metrics_path = paths.measurements_dir(artifacts_root) / f"{video_id}.jsonl"
     util.ensure_dir(metrics_path.parent)
     with open(metrics_path, "a", encoding="utf-8") as fh:
         fh.write(json.dumps(snapshot, ensure_ascii=False) + "\n")
+
+    def _as_number(value):
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            return None
+
+    numeric_metrics = {}
+    for name in ("viewCount", "likeCount", "commentCount", "favoriteCount"):
+        number = _as_number(stats.get(name))
+        if number is not None:
+            numeric_metrics[name.lower()] = number
+    placeholder = snapshot.get("view_through_placeholder_pct")
+    if placeholder is not None:
+        numeric_metrics["view_through_placeholder_pct"] = float(placeholder)
+    store.record_measurements(
+        snapshot["video_id"],
+        "mock" if mock else "youtube-data-api-v3",
+        numeric_metrics,
+        ts=snapshot["fetched_at"],
+        conn=None,
+    )
 
     print(f"title: {snapshot['title']}")
     print(f"views: {stats.get('viewCount', 0)}")

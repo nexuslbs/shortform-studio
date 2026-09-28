@@ -13,6 +13,7 @@ import sys
 
 from . import billing
 from .billing import get_billing
+from .billing import catalog as catalog_mod
 from .billing import ledger as ledger_mod
 from .billing import webhook as webhook_mod
 from .billing.polar import SANDBOX_BASE
@@ -58,7 +59,7 @@ def cmd_provision(args) -> int:
         # No provider API call is made on the dry-run path.
         print("# billing provision --dry-run (no request sent)")
         print("# base: %s" % (os.environ.get("POLAR_API_BASE") or SANDBOX_BASE))
-        for spec in billing.CATALOG:
+        for spec in catalog_mod.specs():
             body = billing.build_product_body(spec)
             print("POST /products/  # slug=%s" % spec["slug"])
             _dump(body)
@@ -73,7 +74,7 @@ def cmd_checkout(args) -> int:
     provider = get_billing()
     product = provider.find_product_by_slug(args.product)
     if product is None:
-        known = ", ".join(spec["slug"] for spec in billing.CATALOG)
+        known = ", ".join(spec["slug"] for spec in catalog_mod.specs())
         print("ERROR: no polar sandbox product with slug %r (known: %s); "
               "run `billing provision` first" % (args.product, known), file=sys.stderr)
         return 3

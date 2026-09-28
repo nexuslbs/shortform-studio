@@ -103,7 +103,7 @@ def test_title_within_limit():
 # --------------------------------------------------------------------------- #
 
 def test_run_qa_missing_video(tmp_path):
-    report, code = qa.run_qa("does-not-exist", root=tmp_path)
+    report, code = qa.run_qa("does-not-exist", artifacts_root=tmp_path)
     assert code == 1
     assert report["pass"] is False
     assert report["checks"][0]["check"] == "video_exists"
@@ -146,10 +146,22 @@ def test_redact_headers_keeps_missing_token_marker():
     assert "redacted" not in red["Authorization"]
 
 
-def test_dry_run_without_token_shows_not_set(monkeypatch, capsys):
+def _fake_artifact(data_root: Path, slug: str = "roman-concrete") -> Path:
+    """A tiny stand-in video + metadata at an external artifact root."""
+    artifact = data_root / slug
+    artifact.mkdir(parents=True, exist_ok=True)
+    (artifact / "video.mp4").write_bytes(b"not-a-real-mp4")
+    (artifact / "metadata.json").write_text(
+        json.dumps({"snippet": {"title": "T"}, "status": {}}), encoding="utf-8"
+    )
+    return artifact
+
+
+def test_dry_run_without_token_shows_not_set(monkeypatch, capsys, tmp_path):
     # F1: a dry-run without $YOUTUBE_OAUTH_TOKEN must say so explicitly.
     monkeypatch.delenv("YOUTUBE_OAUTH_TOKEN", raising=False)
-    assert publish("roman-concrete", mode="dry-run", root=REPO) == 0
+    _fake_artifact(tmp_path)
+    assert publish("roman-concrete", mode="dry-run", root=REPO, artifacts_root=tmp_path) == 0
     out = capsys.readouterr().out
     auth_lines = [
         line.strip()
@@ -195,12 +207,13 @@ def test_measure_network_error_exits_3_cleanly():
     assert "urllib.error.URLError" not in combined
 
 
-def test_publish_network_error_exits_3_cleanly():
+def test_publish_network_error_exits_3_cleanly(tmp_path):
     # F2 for the publish path: live upload to an unreachable host exits 3 cleanly.
     port = _dead_port()
+    _fake_artifact(tmp_path)
     proc = _run_cli(
         ["publish", "--slug", "roman-concrete", "--live", "--api-base", f"http://127.0.0.1:{port}"],
-        {"YOUTUBE_OAUTH_TOKEN": "ya29.dummy-token"},
+        {"YOUTUBE_OAUTH_TOKEN": "ya29.dummy-token", "SHORTFORM_ARTIFACTS_DIR": str(tmp_path)},
     )
     combined = proc.stdout + proc.stderr
     assert proc.returncode == 3, combined

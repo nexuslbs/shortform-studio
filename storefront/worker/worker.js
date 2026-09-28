@@ -36,9 +36,15 @@ const SECURITY_HEADERS = {
   "X-Content-Type-Options": "nosniff",
 };
 
-/* The real rendered artifact delivered by the one-time video pack. */
+/* The real rendered artifact delivered by the one-time video pack.
+ *
+ * NOTE: a Cloudflare Worker has no host filesystem and this Worker serves only
+ * a JSON manifest (no bytes). The `path` is a data-store LOCATOR, not a repo
+ * path: a host-side tool resolves `data://shortform-studio/...` against the
+ * external data root and verifies the bytes/sha256. See
+ * storefront/scripts/verify_manifest.py and docs/ARTIFACT-STORE.md. */
 const ROMAN_CONCRETE_ARTIFACT = {
-  path: "out/roman-concrete/video.mp4",
+  path: "data://shortform-studio/roman-concrete/video.mp4",
   bytes: 2404763,
   duration_s: 37.5,
   resolution: "1080x1920",

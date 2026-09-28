@@ -1,8 +1,9 @@
 """``shortform qa`` - validate a produced video against the delivery contract.
 
 Exits 0 on PASS and 1 on FAIL. The full machine-readable report is written to
-``out/<slug>/qa-report.json`` regardless of the outcome, so a failing run still
-leaves evidence.
+``{data_root}/<slug>/qa-report.json`` (never the repo tree) regardless of the
+outcome, so a failing run still leaves evidence. Each run also appends a QA
+event to the SQLite store.
 """
 
 from __future__ import annotations
@@ -13,7 +14,7 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
-from . import util
+from . import store, util
 from .produce import AFFILIATE_DISCLOSURE, DISCLOSURE_SENTENCE
 
 URL_RE = re.compile(r"https?://[^\s<>\"')]+", re.I)
@@ -50,9 +51,15 @@ def _streams(probe: dict[str, Any]) -> tuple[dict, dict | None]:
     return video or {}, audio
 
 
-def run_qa(slug: str, root: Path | None = None) -> tuple[dict[str, Any], int]:
+def run_qa(
+    slug: str,
+    root: Path | None = None,
+    artifacts_root: Path | None = None,
+) -> tuple[dict[str, Any], int]:
+    # ``root`` is the SOURCE repository root; ``artifacts_root`` is an explicit
+    # data-root override for tests. Artifacts always resolve outside the repo.
     root = root or util.repo_root()
-    out = util.out_dir(slug, root)
+    out = util.out_dir(slug, artifacts_root)
     video = out / "video.mp4"
     title_path = out / "title.txt"
     desc_path = out / "description.txt"
@@ -217,6 +224,17 @@ def run_qa(slug: str, root: Path | None = None) -> tuple[dict[str, Any], int]:
 
     report["pass"] = all(c["passed"] for c in results)
     util.write_json(out / "qa-report.json", report)
+
+    width, height = vstream.get("width"), vstream.get("height")
+    store.record_qa(
+        slug,
+        report,
+        out,
+        bytes=video.stat().st_size,
+        sha256=util.sha256_file(video),
+        duration_s=duration,
+        resolution="%sx%s" % (width, height) if width and height else None,
+    )
     return report, 0 if report["pass"] else 1
 
 

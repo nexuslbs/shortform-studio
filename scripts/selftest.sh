@@ -6,7 +6,9 @@
 #           -> publish --live --api-base http://127.0.0.1:8787
 #           -> measure --mock -> stop mock
 #
-# Every step prints PASS/FAIL and its raw output is left under out/selftest/.
+# Every step prints PASS/FAIL and its raw output is left under the external
+# data root at $SHORTFORM_ARTIFACTS_DIR/selftest (default
+# {OMNI_DIR}/data/artifacts/shortform-studio/selftest).
 # Exit code is 0 only when every step passed.
 set -u
 
@@ -16,8 +18,10 @@ cd "$REPO"
 SLUG="${SELFTEST_SLUG:-roman-concrete}"
 PORT="${MOCK_PORT:-8787}"
 BASE="http://127.0.0.1:${PORT}"
-RAW="$REPO/out/selftest"
 PY="${PYTHON:-python3}"
+# Runtime artifacts live under the external data root, never the repo tree.
+ARTIFACTS_ROOT="$("$PY" -c 'from shortform import paths; print(paths.data_root())')"
+RAW="$ARTIFACTS_ROOT/selftest"
 
 rm -rf "$RAW"
 mkdir -p "$RAW"
@@ -74,7 +78,7 @@ step produce "$PY" -m shortform produce --slug "$SLUG"
 # 2) qa
 # --------------------------------------------------------------------------- #
 step qa "$PY" -m shortform qa --slug "$SLUG"
-[ -f "$REPO/out/$SLUG/qa-report.json" ] && cp "$REPO/out/$SLUG/qa-report.json" "$RAW/qa-report.json"
+[ -f "$ARTIFACTS_ROOT/$SLUG/qa-report.json" ] && cp "$ARTIFACTS_ROOT/$SLUG/qa-report.json" "$RAW/qa-report.json"
 
 # --------------------------------------------------------------------------- #
 # 3) publish --dry-run (sends nothing)
@@ -140,8 +144,8 @@ else
   SUMMARY+=("PASS  stop-mock")
 fi
 cp "$REPO/mocks/transcript.log" "$RAW/transcript.log" 2>/dev/null || true
-cp "$REPO/out/$SLUG/video.mp4" "$RAW/video.mp4" 2>/dev/null || true
-ffprobe -v error -show_streams -show_format -of json "$REPO/out/$SLUG/video.mp4" \
+cp "$ARTIFACTS_ROOT/$SLUG/video.mp4" "$RAW/video.mp4" 2>/dev/null || true
+ffprobe -v error -show_streams -show_format -of json "$ARTIFACTS_ROOT/$SLUG/video.mp4" \
   > "$RAW/ffprobe.json" 2>&1 || true
 
 # --------------------------------------------------------------------------- #

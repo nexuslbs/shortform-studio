@@ -21,7 +21,7 @@ import time
 from pathlib import Path
 from typing import Any
 
-from . import util
+from . import store, util
 from .util import Provenance
 
 SRT_TS = "%02d:%02d:%02d,%03d"
@@ -335,14 +335,22 @@ def build_metadata(script: dict[str, Any], description: str) -> dict[str, Any]:
 # Top-level produce
 # --------------------------------------------------------------------------- #
 
-def produce(slug: str, seconds: float | None = None, root: Path | None = None) -> dict[str, Any]:
+def produce(
+    slug: str,
+    seconds: float | None = None,
+    root: Path | None = None,
+    artifacts_root: Path | None = None,
+) -> dict[str, Any]:
+    # ``root`` is the SOURCE repository root (content/<slug>/script.json);
+    # ``artifacts_root`` is an explicit data-root override for tests. Output
+    # always lands under the external data root, never in the repo tree.
     root = root or util.repo_root()
     content = util.content_dir(slug, root)
     script_path = content / "script.json"
     if not script_path.exists():
         raise FileNotFoundError(f"no script at {script_path}")
 
-    out = util.out_dir(slug, root)
+    out = util.out_dir(slug, artifacts_root)
     tmp = util.ensure_dir(out / "tmp")
     graphics_dir = util.ensure_dir(out / "graphics")
     audio_dir = util.ensure_dir(out / "audio")
@@ -467,7 +475,8 @@ def produce(slug: str, seconds: float | None = None, root: Path | None = None) -
     prov_data = prov.as_dict()
     prov_data["intermediates_note"] = (
         "audio/ and tmp/ intermediates are deleted after muxing to keep the "
-        "repository small; the hashes above were computed while they existed."
+        "artifact directory small; the hashes above were computed while they "
+        "existed."
     )
     prov_path = out / "provenance.json"
     util.write_json(prov_path, prov_data)
@@ -482,9 +491,21 @@ def produce(slug: str, seconds: float | None = None, root: Path | None = None) -
                     child.rmdir()
             scratch.rmdir()
 
+    # 9) append a render event to the store (external data root; never the repo).
+    store.record_render(
+        slug,
+        out,
+        bytes=video.stat().st_size,
+        sha256=util.sha256_file(video),
+        duration_s=total,
+        resolution="1080x1920",
+        status="rendered",
+    )
+
     return {
         "slug": slug,
         "video": str(video),
+        "artifact_dir": str(out),
         "duration_s": total,
         "scenes": len(scenes),
         "loudnorm_measured": measured,

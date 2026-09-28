@@ -28,6 +28,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
+from . import catalog as catalog_mod
 from .base import BillingError, Checkout, Product, iso_now
 
 SANDBOX_BASE = "https://sandbox-api.polar.sh/v1"
@@ -40,55 +41,13 @@ DEFAULT_TIMEOUT = 30
 API_KEY_ENV = ("POLAR_API_KEY", "SANDBOX_POLAR_API_KEY_SHORTFORM_STUDIO")
 CREDENTIAL_STORE_NAME = "SANDBOX_POLAR_API_KEY_SHORTFORM_STUDIO"
 
-#: The ShortForm Studio catalog. At least one one-time video pack and at least
-#: one recurring subscription; ``metadata.slug`` is the idempotency key.
-CATALOG = (
-    {
-        "slug": "video-pack-roman-concrete",
-        "name": "ShortForm Studio Video Pack: Roman Concrete",
-        "description": (
-            "The rendered 9:16 short How Roman Concrete Survived 2000 Years: "
-            "H.264 1080x1920 with AAC audio, burnt captions, plus SRT, "
-            "description and metadata. Deterministic render, QA 17/17 PASS."
-        ),
-        "price_cents": 1900,
-        "currency": "usd",
-        "recurring_interval": None,
-    },
-    {
-        "slug": "shorts-bundle-3",
-        "name": "ShortForm Studio 3-Pack",
-        "description": (
-            "Three policy-checked 9:16 shorts rendered and QA-gated, each "
-            "with captions, title, description and metadata."
-        ),
-        "price_cents": 2900,
-        "currency": "usd",
-        "recurring_interval": None,
-    },
-    {
-        "slug": "caption-kit",
-        "name": "ShortForm Caption + Metadata Kit",
-        "description": (
-            "The caption, title, description and metadata kit for one short, "
-            "ready to paste into the channel."
-        ),
-        "price_cents": 900,
-        "currency": "usd",
-        "recurring_interval": None,
-    },
-    {
-        "slug": "studio-monthly-4",
-        "name": "ShortForm Studio Monthly - 4 videos/month",
-        "description": (
-            "Four policy-checked shorts per month with captions, metadata and "
-            "the QA report for each render."
-        ),
-        "price_cents": 2900,
-        "currency": "usd",
-        "recurring_interval": "month",
-    },
-)
+#: The ShortForm Studio catalog. The canonical contract is the SOURCE fixture
+#: ``storefront/catalog.json``; at runtime :func:`shortform.billing.catalog.specs`
+#: reads the ``catalog_products`` table (seeded from that fixture). The tuple
+#: below is a read-only snapshot of the fixture for tools/tests that import
+#: ``CATALOG`` directly. At least one one-time video pack and at least one
+#: recurring subscription; ``metadata.slug`` is the idempotency key.
+CATALOG = tuple(catalog_mod.fixture_specs())
 
 #: Alias kept for callers that use the PRODUCTS name. The canonical catalog is
 #: the SAME slug/price set as storefront/catalog.json and the Worker catalog.
@@ -226,7 +185,7 @@ class PolarBilling:
         existing = {}
         if not dry_run:
             existing = {p.slug: p for p in self.list_products()}
-        for spec in CATALOG:
+        for spec in catalog_mod.specs():
             body = build_product_body(spec)
             if dry_run:
                 results.append({"slug": spec["slug"], "action": "dry-run",

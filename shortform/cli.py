@@ -5,7 +5,7 @@ from __future__ import annotations
 import argparse
 import sys
 
-from . import __version__
+from . import __version__, paths, store
 from .billing_cli import add_billing_subparser
 from .measure import DEFAULT_MOCK_BASE, REAL_API_BASE as MEASURE_API_BASE, measure
 from .produce import produce
@@ -23,7 +23,10 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--version", action="version", version=f"shortform-studio {__version__}")
     sub = parser.add_subparsers(dest="command", required=True)
 
-    p_produce = sub.add_parser("produce", help="render out/<slug>/video.mp4 from content/<slug>/script.json")
+    p_produce = sub.add_parser(
+        "produce",
+        help="render {data_root}/<slug>/video.mp4 from content/<slug>/script.json",
+    )
     p_produce.add_argument("--slug", required=True)
     p_produce.add_argument("--seconds", type=float, default=None,
                            help="rescale scene holds so the video is this long")
@@ -43,7 +46,10 @@ def build_parser() -> argparse.ArgumentParser:
                        help="override the API host (default: %(default)s)")
     p_pub.set_defaults(func=_cmd_publish)
 
-    p_meas = sub.add_parser("measure", help="fetch statistics and append a metrics snapshot")
+    p_meas = sub.add_parser(
+        "measure",
+        help="fetch statistics into measurement_series under the external data root",
+    )
     p_meas.add_argument("--video-id", required=True)
     p_meas.add_argument("--mock", action="store_true",
                         help=f"use the local mock base URL (default {DEFAULT_MOCK_BASE})")
@@ -52,6 +58,26 @@ def build_parser() -> argparse.ArgumentParser:
     p_meas.set_defaults(func=_cmd_measure)
 
     add_billing_subparser(sub)
+
+    p_store = sub.add_parser(
+        "store", help="SQLite store maintenance (schema lives in-repo)"
+    )
+    store_sub = p_store.add_subparsers(dest="store_command")
+    sp = store_sub.add_parser("path", help="print the resolved data root and store paths")
+    sp.set_defaults(func=_cmd_store_path)
+    sp = store_sub.add_parser(
+        "migrate", help="one-shot lossless import of the legacy out/<slug>/ tree"
+    )
+    sp.add_argument("--source", default=None, help="source out/ directory (default: repo out/)")
+    sp.add_argument("--content", default=None, help="content directory (default: repo content/)")
+    sp.add_argument("--slug", action="append", default=None,
+                    help="restrict to this slug (repeatable)")
+    sp.set_defaults(func=_cmd_store_migrate)
+    sp = store_sub.add_parser(
+        "verify", help="re-hash the artifacts on disk and compare to the renders rows"
+    )
+    sp.set_defaults(func=_cmd_store_verify)
+    p_store.set_defaults(func=lambda args: (p_store.print_help(), 0)[1])
 
     return parser
 
@@ -79,6 +105,59 @@ def _cmd_measure(args) -> int:
     if args.mock and api_base is None:
         api_base = DEFAULT_MOCK_BASE
     return measure(args.video_id, mock=args.mock, api_base=api_base)
+
+
+def _cmd_store_path(args) -> int:
+    print("DATA_ROOT=%s" % paths.data_root())
+    print("STORE_DB=%s" % store.db_path())
+    print("MEASUREMENTS_DIR=%s" % paths.measurements_dir())
+    return 0
+
+
+def _cmd_store_migrate(args) -> int:
+    result = store.migrate_legacy_out(
+        source_root=args.source,
+        content_root=args.content,
+        slugs=args.slug,
+    )
+    print("STORE_DB=%s" % result["store_db"])
+    print("SOURCE=%s" % result["source_root"])
+    print("examined=%d inserted=%d" % (result["examined"], result["inserted"]))
+    for item in result["results"]:
+        print(
+            "slug=%s files=%d already_migrated=%s bytes=%s sha256=%s artifact_dir=%s"
+            % (
+                item["slug"],
+                item["files"],
+                item["already_migrated"],
+                item["bytes"],
+                item["sha256"],
+                item["artifact_dir"],
+            )
+        )
+    return 0
+
+
+def _cmd_store_verify(args) -> int:
+    result = store.verify_store()
+    print("STORE_DB=%s" % result["store_db"])
+    for check in result["checks"]:
+        print(
+            "slug=%s path=%s db_bytes=%s disk_bytes=%s match=%s qa=%s status=%s"
+            % (
+                check["slug"],
+                check["path"],
+                check["db_bytes"],
+                check["disk_bytes"],
+                check["match"],
+                check["qa"],
+                check["status"],
+            )
+        )
+        print("  db_sha256=%s" % check["db_sha256"])
+        print("  disk_sha256=%s" % check["disk_sha256"])
+    print("renders=%d MATCH=%s" % (result["renders"], result["match"]))
+    return 0 if result["match"] else 1
 
 
 def main(argv: list[str] | None = None) -> int:

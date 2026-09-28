@@ -18,7 +18,13 @@ storefront.
 | `studio-monthly-4` | ShortForm Studio Monthly - 4 videos/month | USD 2900 cents | subscription, month |
 
 The same slugs/prices live in `storefront/catalog.json`, the Worker catalog
-constant, and `shortform/billing/polar.py` `CATALOG` / `PRODUCTS`.
+constant, and the store-backed `shortform/billing/catalog.py` (seeded from the
+same fixture).
+
+The `video-pack-roman-concrete` artifact is referenced by a data-store locator
+(`data://shortform-studio/roman-concrete/video.mp4`), not a repo path. The
+Worker serves only a JSON manifest (it has no filesystem); resolve and verify
+the bytes on the host with `python3 scripts/verify_manifest.py`.
 
 ## Files
 
@@ -26,10 +32,13 @@ constant, and `shortform/billing/polar.py` `CATALOG` / `PRODUCTS`.
   `/api/checkout`, `/success`, `/cancel`, `/webhooks/polar`, `/ledger`,
   `/ledger.jsonl`, `/catalog.json`, `/download/<slug>`, `/healthz`).
 - `wrangler.toml` - Worker name, sandbox var, `LEDGER` KV binding.
-- `catalog.json` - canonical catalog; `product_id` is `null` until provisioning.
+- `catalog.json` - canonical catalog SOURCE fixture; `product_id` is `null`
+  until provisioning.
 - `scripts/provision_products.mjs` - idempotent Polar product provisioning.
 - `scripts/deploy_cloudflare.sh` - secret put + `wrangler deploy`.
 - `scripts/smoke.mjs` - local assertions, no network, no key.
+- `scripts/verify_manifest.py` - host-side data-locator resolution +
+  sha256/bytes verification against the manifest and the SQLite store.
 
 ## Runbook (sandbox only)
 

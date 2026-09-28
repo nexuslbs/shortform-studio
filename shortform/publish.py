@@ -20,7 +20,7 @@ import uuid
 from pathlib import Path
 from typing import Any
 
-from . import util
+from . import store, util
 
 REAL_API_BASE = "https://www.googleapis.com"
 UPLOAD_PATH = "/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status"
@@ -99,14 +99,17 @@ def publish(
     privacy: str = "private",
     api_base: str = REAL_API_BASE,
     root: Path | None = None,
+    artifacts_root: Path | None = None,
 ) -> int:
     if mode not in ("dry-run", "live"):
         raise ValueError("mode must be 'dry-run' or 'live'")
     if privacy not in PRIVACY_CHOICES:
         raise ValueError(f"privacy must be one of {PRIVACY_CHOICES}")
 
+    # ``root`` is the SOURCE repository root; ``artifacts_root`` is an explicit
+    # data-root override for tests. Artifacts always resolve outside the repo.
     root = root or util.repo_root()
-    out = util.out_dir(slug, root)
+    out = util.out_dir(slug, artifacts_root)
     video = out / "video.mp4"
     meta_path = out / "metadata.json"
     if not video.exists():
@@ -190,5 +193,6 @@ def publish(
         "response": resource,
     }
     util.write_json(out / "publish-result.json", result)
+    store.record_publish_event(slug, "youtube", video_id, privacy, result)
     print(f"UPLOAD OK id={video_id} privacy={privacy}")
     return 0

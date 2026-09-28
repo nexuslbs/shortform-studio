@@ -33,7 +33,8 @@ while [ "$#" -gt 0 ]; do
   esac
 done
 
-ART_DIR="$REPO/out/$SLUG"
+ARTIFACTS_ROOT="$("$PY" -c 'from shortform import paths; print(paths.data_root())')"
+ART_DIR="$ARTIFACTS_ROOT/$SLUG"
 VIDEO="$ART_DIR/video.mp4"
 META="$ART_DIR/metadata.json"
 FAILURES=0
@@ -58,14 +59,14 @@ fi
 
 # --- 2. artifact ------------------------------------------------------------
 if [ -f "$VIDEO" ]; then
-  ok "artifact exists: out/$SLUG/video.mp4 ($(wc -c <"$VIDEO") bytes)"
+  ok "artifact exists: $VIDEO ($(wc -c <"$VIDEO") bytes)"
 else
-  bad "artifact missing: out/$SLUG/video.mp4 - run: python3 -m shortform produce --slug $SLUG"
+  bad "artifact missing: $VIDEO - run: python3 -m shortform produce --slug $SLUG"
 fi
 if [ -f "$META" ]; then
-  ok "metadata exists: out/$SLUG/metadata.json"
+  ok "metadata exists: $META"
 else
-  bad "metadata missing: out/$SLUG/metadata.json - run produce first"
+  bad "metadata missing: $META - run produce first"
 fi
 
 # --- 3. QA gate -------------------------------------------------------------

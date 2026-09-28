@@ -3,7 +3,7 @@
 A minimal, policy-compliant short-form video production line. It renders a
 **1080x1920 (9:16)** short from an **original** script, validates it against the
 platform/technical delivery contract, and can upload and measure it through the
-YouTube Data API v3 — or entirely offline against a bundled mock when no
+YouTube Data API v3 - or entirely offline against a bundled mock when no
 platform credential exists.
 
 Everything is generated locally. **No third-party footage, music, or images are
@@ -16,6 +16,11 @@ script.json -> original Pillow graphics -> espeak-ng TTS -> SRT captions
             -> title.txt / description.txt / metadata.json / provenance.json
             -> qa-report.json -> YouTube resumable upload -> metrics snapshots
 ```
+
+**The repo is source-only.** Generated video, QA evidence, measurements and the
+SQLite store live under the external artifact store
+(`$SHORTFORM_ARTIFACTS_DIR` or `{OMNI_DIR}/data/artifacts/shortform-studio`),
+never in the repository. See `docs/ARTIFACT-STORE.md`.
 
 ---
 
@@ -41,7 +46,7 @@ bash scripts/selftest.sh
 ```
 
 Dependencies: Python 3.9+ stdlib, `ffmpeg`/`ffprobe`, `espeak-ng` (or any TTS
-command via `$TTS_CMD`), and `Pillow`. `requests` is *not* required — the network
+command via `$TTS_CMD`), and `Pillow`. `requests` is *not* required - the network
 calls use `urllib` from the standard library. `pytest` is only needed for the
 unit tests.
 
@@ -51,7 +56,9 @@ unit tests.
 
 ### `produce --slug <slug> [--seconds N]`
 
-Renders `out/<slug>/video.mp4` from `content/<slug>/script.json`:
+Renders `{data_root}/<slug>/video.mp4` from `content/<slug>/script.json`
+(`{data_root}` is the external artifact store, never the repo tree; resolve it
+with `python3 -m shortform store path`):
 
 ```json
 {
@@ -84,7 +91,8 @@ output hashes).
 
 ### `qa --slug <slug>`
 
-Writes `out/<slug>/qa-report.json`, exits **0 on PASS / 1 on FAIL**. Checks:
+Writes `{data_root}/<slug>/qa-report.json`, exits **0 on PASS / 1 on FAIL**.
+Also appends a QA event to the SQLite store. Checks:
 container duration 15-60 s; video `h264` / `yuv420p` / 1080x1920 / SAR 1:1;
 audio `aac` present; integrated loudness -14 ±1 LUFS and true peak ≤ -1 dBTP;
 title ≤ 100 chars; description ≤ 5000 chars; `#Shorts` present; synthetic-media
@@ -107,7 +115,7 @@ PUT <Location from step 1>   # raw video bytes
 
 * `--dry-run` (default) prints the exact method/URL/headers/body and **sends
   nothing**.
-* Default `privacyStatus=private` — a human approves before anything is public.
+* Default `privacyStatus=private` - a human approves before anything is public.
 * Missing `$YOUTUBE_OAUTH_TOKEN` on `--live` prints an exact human-handover
   message and exits **2**. The pipeline **never fakes an upload**.
 * `--api-base <url>` points the same code at the local mock.
@@ -118,7 +126,8 @@ PUT <Location from step 1>   # raw video bytes
 GET /youtube/v3/videos?part=snippet,statistics&id=<ID>&key=$YOUTUBE_API_KEY
 ```
 
-Appends a timestamped snapshot to `data/metrics/<id>.jsonl` and prints
+Appends one `measurement_series` row per metric to the SQLite store and mirrors
+a timestamped snapshot to `{data_root}/measurements/<id>.jsonl`, then prints
 views/likes/comments plus a clearly labelled **view-through placeholder**
 (the real view-through rate needs the YouTube Analytics API with OAuth).
 `--mock` (or `--api-base`) uses the local mock. Missing `$YOUTUBE_API_KEY`
@@ -131,7 +140,7 @@ against the real host prints a handover message and exits 2.
 A stdlib `http.server` implementing the three endpoints above. It logs every
 request line, header and body size to `mocks/transcript.log` (Authorization is
 redacted). This is how the publish/measure legs are verified **without** a
-Google credential — there is no Google sandbox for `videos.insert`.
+Google credential - there is no Google sandbox for `videos.insert`.
 
 ```bash
 python3 mocks/youtube_mock.py --port 8787 --transcript mocks/transcript.log
@@ -142,7 +151,7 @@ python3 mocks/youtube_mock.py --port 8787 --transcript mocks/transcript.log
 ## Self-test
 
 `scripts/selftest.sh` runs one full chain and leaves raw evidence under
-`out/selftest/`:
+`{data_root}/selftest/`:
 
 ```
 produce -> qa -> publish --dry-run -> start mock
@@ -151,8 +160,9 @@ produce -> qa -> publish --dry-run -> start mock
 ```
 
 Each step prints `PASS`/`FAIL`; the script exits non-zero if any step failed.
-Raw artifacts: `out/selftest/*.log`, `out/selftest/transcript.log`,
-`out/selftest/qa-report.json`, `out/selftest/ffprobe.json`, `out/selftest/video.mp4`.
+Raw artifacts: `{data_root}/selftest/*.log`,
+`{data_root}/selftest/transcript.log`, `{data_root}/selftest/qa-report.json`,
+`{data_root}/selftest/ffprobe.json`, `{data_root}/selftest/video.mp4`.
 
 Unit tests:
 
@@ -202,14 +212,21 @@ the environment only.
 ## Layout
 
 ```
-shortform/            package (produce, qa, publish, measure, cli)
-content/<slug>/       original scripts
+shortform/            package (produce, qa, publish, measure, store, cli)
+content/<slug>/       original scripts (SOURCE fixtures)
 mocks/youtube_mock.py local API mock + transcript.log
 tests/                pytest suite
 scripts/selftest.sh   one-shot end-to-end proof
 docs/RUNBOOK.md       ordered operator steps
-out/<slug>/           produced artifacts (video, captions, metadata, provenance)
-data/metrics/         appended measurement snapshots
+docs/ARTIFACT-STORE.md storage contract and DB schema
+storefront/           Cloudflare Worker storefront (source)
+{data_root}/<slug>/   produced artifacts (video, captions, metadata, provenance)
+{data_root}/studio.db SQLite store
+{data_root}/measurements/  measurement_series JSONL mirrors
 ```
 
-MIT licensed — see `LICENSE`.
+`{data_root}` is `$SHORTFORM_ARTIFACTS_DIR` or
+`{OMNI_DIR}/data/artifacts/shortform-studio` (`OMNI_DIR` default `/opt/omni`);
+it is never inside the repo. See `docs/ARTIFACT-STORE.md`.
+
+MIT licensed - see `LICENSE`.

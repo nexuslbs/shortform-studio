@@ -18,7 +18,7 @@
       "recurring_interval": null,
       "product_id": "805fafde-0825-4732-8817-21d0bd412502",
       "artifact": {
-        "path": "out/roman-concrete/video.mp4",
+        "path": "data://shortform-studio/roman-concrete/video.mp4",
         "bytes": 2404763,
         "duration_s": 37.5,
         "resolution": "1080x1920",

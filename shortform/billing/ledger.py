@@ -1,8 +1,15 @@
-"""Append-only billing ledger: ``ledger/ledger.jsonl``.
+"""Append-only billing ledger: ``{data_root}/ledger/ledger.jsonl``.
 
 ONE row per provider event, idempotent on the provider event id: feeding the
 same event twice appends exactly one row. The ledger is append-only - rows are
 never rewritten or deleted.
+
+The ledger file lives OUTSIDE the repository, under the configured data root
+(see :mod:`shortform.paths`). Every append is also mirrored into the SQLite
+``entitlements`` table (see :mod:`shortform.store`) so the growing billing data
+is queryable. ``$SHORTFORM_BILLING_LEDGER`` (or an explicit ``path=``) redirects
+the log to a plain JSONL file and disables the SQLite mirror, which keeps the
+test suite off the real store.
 """
 
 from __future__ import annotations
@@ -12,19 +19,36 @@ import os
 import threading
 from pathlib import Path
 
+from .. import paths, store
 from .base import WebhookEvent, iso_now
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
-DEFAULT_LEDGER = REPO_ROOT / "ledger" / "ledger.jsonl"
 ENV_LEDGER = "SHORTFORM_BILLING_LEDGER"
 _LOCK = threading.Lock()
+
+
+def _default_ledger_path() -> Path:
+    return paths.data_root() / "ledger" / "ledger.jsonl"
+
+
+#: Kept as a module-level snapshot for operators/reports; prefer ledger_path().
+DEFAULT_LEDGER = _default_ledger_path()
+
+
+def store_enabled(path=None) -> bool:
+    """True when the ledger points at the default data-root location.
+
+    An explicit ``path`` or ``$SHORTFORM_BILLING_LEDGER`` switches the ledger to
+    a plain JSONL file and skips the SQLite mirror.
+    """
+    return path is None and not os.environ.get(ENV_LEDGER)
 
 
 def ledger_path(path=None) -> Path:
     if path is not None:
         return Path(path)
     override = os.environ.get(ENV_LEDGER)
-    return Path(override) if override else DEFAULT_LEDGER
+    return Path(override) if override else _default_ledger_path()
 
 
 def rows(path=None) -> list:
@@ -83,4 +107,6 @@ def append_event(event: WebhookEvent, provider: str = "polar", env: str = "sandb
         target.parent.mkdir(parents=True, exist_ok=True)
         with target.open("a", encoding="utf-8") as handle:
             handle.write(json.dumps(row, sort_keys=True) + "\n")
+        if store_enabled(path):
+            store.record_entitlement(event, env=env)
         return row

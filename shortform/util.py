@@ -19,6 +19,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Iterable, Sequence
 
+from . import paths
+
 
 class NetworkError(RuntimeError):
     """A non-HTTP network failure (DNS, refused connection, timeout, ...).
@@ -40,8 +42,13 @@ def repo_root() -> Path:
 
 
 def out_dir(slug: str, root: Path | None = None) -> Path:
-    root = root or repo_root()
-    return root / "out" / slug
+    """Runtime artifact directory for ``slug``.
+
+    Always resolves under the external data root (see :mod:`shortform.paths`)
+    and never inside the repository tree. ``root`` is an explicit test/DI
+    override for the *data root*; callers must pass ``None`` in production.
+    """
+    return paths.artifact_dir(slug, root)
 
 
 def content_dir(slug: str, root: Path | None = None) -> Path:

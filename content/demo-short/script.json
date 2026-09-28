@@ -1,0 +1,33 @@
+{
+  "topic": "How the artifact store works",
+  "label": "ARTIFACT STORE",
+  "title": "Where ShortForm Studio Keeps Its Videos",
+  "summary": "A three-scene demo used to prove that rendering writes outside the repository into the external artifact store. It is deliberately tiny and cheap to encode.",
+  "categoryId": "27",
+  "tags": [
+    "artifact store",
+    "shortform studio",
+    "demo"
+  ],
+  "hashtags": ["#Shorts", "#ArtifactStore", "#Demo"],
+  "narration": [
+    {
+      "scene": 1,
+      "say": "Generated video never belongs in the source repository.",
+      "onscreen": "SOURCE ONLY",
+      "hold": 5.0
+    },
+    {
+      "scene": 2,
+      "say": "The store lives outside the repo under the omni data directory.",
+      "onscreen": "DATA ROOT",
+      "hold": 5.0
+    },
+    {
+      "scene": 3,
+      "say": "A locator in the catalog points back to the verified bytes.",
+      "onscreen": "VERIFY THE HASH",
+      "hold": 5.0
+    }
+  ]
+}
