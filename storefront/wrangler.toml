@@ -11,7 +11,7 @@ POLAR_API_BASE = "https://sandbox-api.polar.sh/v1"
 #   npx wrangler kv namespace create LEDGER
 [[kv_namespaces]]
 binding = "LEDGER"
-id = "REPLACE_WITH_LEDGER_KV_ID"
+id = "29bc2131cefe46c2a4125c199d83197a"
 
 # Secrets are set out-of-band, never from this repo:
 #   npx wrangler secret put POLAR_API_KEY

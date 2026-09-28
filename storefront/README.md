@@ -64,6 +64,19 @@ CLOUDFLARE_API_TOKEN=... CLOUDFLARE_ACCOUNT_ID=... bash scripts/deploy_cloudflar
 #    Copy the endpoint's whsec_ secret into POLAR_WEBHOOK_SECRET (step 3).
 ```
 
+## Deployed endpoints (SANDBOX, UNLISTED - do not promote)
+
+- Worker URL: https://shortform-studio-storefront.omnistack.workers.dev
+- Ledger KV namespace: `SHORTFORM_LEDGER` id
+  `29bc2131cefe46c2a4125c199d83197a` (binding `LEDGER`, see `wrangler.toml`).
+- Polar sandbox webhook endpoint: `3d934b6a-6f86-4088-9a52-7a568e0a2d26`
+  -> `POST /webhooks/polar` (`format: raw`, `uses_standard_webhook_signature: true`).
+- Pinned to `https://sandbox-api.polar.sh/v1`; no live key.
+- Verified 2026-09-28: `/`, `/product/video-pack-roman-concrete`, `/catalog.json`,
+  `/cancel`, `/healthz` all HTTP 200; `/healthz` reports `ledger_binding: true`;
+  every page carries `SANDBOX / DEMO - no real payment`.
+- This route is intentionally unlisted: no promotion, no release, no outreach.
+
 ## Local verification
 
 ```sh
