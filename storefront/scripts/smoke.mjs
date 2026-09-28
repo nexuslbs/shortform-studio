@@ -265,6 +265,21 @@ const subscriptionBody = JSON.stringify({
 const subscriptionWebhook = await postWebhook(subscriptionBody, sign(subscriptionBody, "msg_monthly"));
 check("subscription webhook = 200", subscriptionWebhook.status === 200, "status=" + subscriptionWebhook.status);
 
+/* A newer order.paid row that merely points at the subscription must not
+ * outrank the subscription.active lifecycle event in the download body. */
+const subscriptionOrderBody = JSON.stringify({
+  type: "order.paid",
+  data: {
+    id: "3ebdac24-5360-47e5-b6fb-3e0e2ccf6615",
+    status: "paid",
+    product_id: "a000e958-094a-4662-b79f-aeace122904a",
+    subscription_id: "153e6e7a-24f4-48ea-b91d-500eeb7bbf8d",
+    metadata: { slug: "studio-monthly-4" },
+  },
+});
+const subscriptionOrder = await postWebhook(subscriptionOrderBody, sign(subscriptionOrderBody, "msg_monthly_order"));
+check("subscription order webhook = 200", subscriptionOrder.status === 200, "status=" + subscriptionOrder.status);
+
 const monthly = await get("/download/studio-monthly-4");
 const monthlyJson = await monthly.json();
 check("/download studio-monthly-4 = 200", monthly.status === 200, "status=" + monthly.status);

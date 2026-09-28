@@ -543,11 +543,17 @@ function rowEntitles(row, slug, productId) {
   return Boolean((slug && rowSlug === slug) || (productId && rowProduct === productId));
 }
 
+/* Rank: a real subscription lifecycle event beats an order that only points at
+ * a subscription, which beats a plain order. The download picks the top rank. */
+function subscriptionRank(row) {
+  if (!row) return 0;
+  if (String(row.type || "").startsWith("subscription.")) return 2;
+  if (row.subscription_id || (row.payload && row.payload.subscription_id)) return 1;
+  return 0;
+}
+
 function isSubscriptionRow(row) {
-  if (!row) return false;
-  return String(row.type || "").startsWith("subscription.")
-    || Boolean(row.subscription_id)
-    || Boolean(row.payload && row.payload.subscription_id);
+  return subscriptionRank(row) > 0;
 }
 
 /* The `subscription` block, only when the entitling row is subscription-backed. */
@@ -569,9 +575,9 @@ async function findEntitlement(env, slug, productId) {
   const matched = (await ledgerRows(env)).filter((row) => rowEntitles(row, slug, productId));
   if (!matched.length) return null;
   matched.sort((a, b) => {
-    const subA = isSubscriptionRow(a) ? 1 : 0;
-    const subB = isSubscriptionRow(b) ? 1 : 0;
-    if (subA !== subB) return subA - subB;
+    const rankA = subscriptionRank(a);
+    const rankB = subscriptionRank(b);
+    if (rankA !== rankB) return rankA - rankB;
     return String(a.received_at).localeCompare(String(b.received_at));
   });
   return matched[matched.length - 1];
