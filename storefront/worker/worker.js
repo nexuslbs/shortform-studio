@@ -57,7 +57,7 @@ const CATALOG = [
     amount: 1900,
     currency: "usd",
     recurring_interval: null,
-    product_id: null,
+    product_id: "805fafde-0825-4732-8817-21d0bd412502",
     artifact: ROMAN_CONCRETE_ARTIFACT,
   },
   {
@@ -68,7 +68,7 @@ const CATALOG = [
     amount: 2900,
     currency: "usd",
     recurring_interval: null,
-    product_id: null,
+    product_id: "d7c598b6-bb7c-4770-8db3-a894f488a1dc",
   },
   {
     slug: "caption-kit",
@@ -78,7 +78,7 @@ const CATALOG = [
     amount: 900,
     currency: "usd",
     recurring_interval: null,
-    product_id: null,
+    product_id: "a1db888e-5b82-435e-82c1-3e3a80a6acb2",
   },
   {
     slug: "studio-monthly-4",
@@ -88,7 +88,7 @@ const CATALOG = [
     amount: 2900,
     currency: "usd",
     recurring_interval: "month",
-    product_id: null,
+    product_id: "a000e958-094a-4662-b79f-aeace122904a",
   },
 ];
 
@@ -448,6 +448,8 @@ async function handleWebhook(request, env) {
     subscription_id: data.subscription_id || (String(event.type || "").startsWith("subscription.") ? data.id || "" : ""),
     customer_email: (data.customer && data.customer.email) || data.customer_email || "",
     status: data.status || "",
+    product_id: data.product_id || (data.product && data.product.id) || "",
+    current_period_end: data.current_period_end || "",
     amount_cents: data.total_amount || data.amount || 0,
     slug: (data.metadata && data.metadata.slug) || "",
     received_at: new Date().toISOString(),
@@ -519,39 +521,104 @@ async function handleLedgerJsonl(env) {
 
 /* ------------------------------------------------------------ entitlement */
 
-function rowEntitles(row, slug) {
-  if (!row || row.slug !== slug) return false;
-  const type = String(row.type || "");
-  const status = String(row.status || "").toLowerCase();
-  return type === "order.paid" || status === "paid" || status === "succeeded" || status === "active";
+/* The product id carried by a ledger row, from the top-level field (new rows)
+ * or the raw webhook payload (rows written before the field existed). */
+function rowProductId(row) {
+  if (!row) return "";
+  const payload = row.payload || {};
+  const product = payload.product || {};
+  return String(row.product_id || payload.product_id || product.id || "");
 }
 
-async function isEntitled(env, slug) {
-  for (const row of await ledgerRows(env)) {
-    if (rowEntitles(row, slug)) return true;
-  }
-  return false;
+/* A row entitles a download when it is paid/active AND matches the requested
+ * slug or the catalog product id of that slug. */
+function rowEntitles(row, slug, productId) {
+  if (!row) return false;
+  const type = String(row.type || "");
+  const status = String(row.status || "").toLowerCase();
+  const paid = type === "order.paid" || status === "paid" || status === "succeeded" || status === "active";
+  if (!paid) return false;
+  const rowSlug = String(row.slug || "");
+  const rowProduct = rowProductId(row);
+  return Boolean((slug && rowSlug === slug) || (productId && rowProduct === productId));
+}
+
+function isSubscriptionRow(row) {
+  if (!row) return false;
+  return String(row.type || "").startsWith("subscription.")
+    || Boolean(row.subscription_id)
+    || Boolean(row.payload && row.payload.subscription_id);
+}
+
+/* The `subscription` block, only when the entitling row is subscription-backed. */
+function subscriptionForRow(row) {
+  if (!isSubscriptionRow(row)) return null;
+  const payload = (row && row.payload) || {};
+  let id = row.subscription_id || payload.subscription_id || "";
+  if (!id && String(row.type || "").startsWith("subscription.")) id = row.object_id || "";
+  if (!id) return null;
+  return {
+    id: String(id),
+    status: String(payload.status || row.status || ""),
+    current_period_end: payload.current_period_end || row.current_period_end || null,
+  };
+}
+
+/* Prefer the newest subscription-backed entitlement, else the newest paid row. */
+async function findEntitlement(env, slug, productId) {
+  const matched = (await ledgerRows(env)).filter((row) => rowEntitles(row, slug, productId));
+  if (!matched.length) return null;
+  matched.sort((a, b) => {
+    const subA = isSubscriptionRow(a) ? 1 : 0;
+    const subB = isSubscriptionRow(b) ? 1 : 0;
+    if (subA !== subB) return subA - subB;
+    return String(a.received_at).localeCompare(String(b.received_at));
+  });
+  return matched[matched.length - 1];
 }
 
 async function handleDownload(env, slug) {
-  const entry = CATALOG.find((item) => item.slug === slug);
-  if (!entry) {
+  const requested = CATALOG.find((item) => item.slug === slug);
+  if (!requested) {
     return json({ error: "unknown_product", slug }, 404);
   }
-  if (!(await isEntitled(env, slug))) {
-    return json({
-      error: "not_entitled",
-      slug,
-      detail: "no paid order or active subscription for this slug",
-    }, 403);
+  const entitlement = await findEntitlement(env, slug, requested.product_id);
+  if (!entitlement) {
+    return json({ error: "not_entitled" }, 403);
   }
-  return json({
-    slug,
+  const entitlingProductId = rowProductId(entitlement);
+  /* Resolve by the product id carried by the entitlement row, then by slug. */
+  const byProduct = entitlingProductId
+    ? CATALOG.find((item) => item.product_id === entitlingProductId)
+    : null;
+  const entry = byProduct || requested;
+  const productId = entry.product_id || entitlingProductId || requested.product_id || null;
+  const artifact = entry.artifact || null;
+  const body = {
+    slug: entry.slug,
     entitled: true,
     name: entry.name,
-    product_id: entry.product_id,
-    manifest: entry.artifact || null,
-  });
+    product_id: productId,
+    price: {
+      amount: entry.amount,
+      currency: entry.currency,
+      recurring_interval: entry.recurring_interval,
+      display: money(entry.amount, entry.currency),
+    },
+    amount: entry.amount,
+    currency: entry.currency,
+    recurring_interval: entry.recurring_interval,
+    artifacts: artifact ? [artifact] : [],
+  };
+  if (artifact) {
+    body.manifest = artifact;
+  } else {
+    body.note = "No single downloadable artifact: " + entry.name
+      + " is a recurring subscription that delivers per-render artifacts over time.";
+  }
+  const subscription = subscriptionForRow(entitlement);
+  if (subscription) body.subscription = subscription;
+  return json(body);
 }
 
 /* --------------------------------------------------------------- signature */

@@ -225,6 +225,18 @@ check("entitled download returns the real manifest",
   JSON.stringify(allowedJson.manifest));
 check("entitled manifest carries the sha256",
   allowedJson.manifest.sha256 === "9ce0e04ef5fe79fb27ec10fd2eb16efedc024b9dbe48d1c62827b45f8dfff206");
+check("entitled manifest sha256 is 64 hex chars",
+  /^[0-9a-f]{64}$/.test(String(allowedJson.manifest.sha256)), String(allowedJson.manifest.sha256).length + " chars");
+check("entitled manifest carries the resolution", allowedJson.manifest.resolution === "1080x1920");
+check("entitled manifest carries the duration", allowedJson.manifest.duration_s === 37.5);
+check("video-pack download carries the real product_id",
+  allowedJson.product_id === "805fafde-0825-4732-8817-21d0bd412502", "product_id=" + allowedJson.product_id);
+check("video-pack download carries the price",
+  allowedJson.price && allowedJson.price.amount === 1900 && allowedJson.price.currency === "usd",
+  JSON.stringify(allowedJson.price));
+check("video-pack download lists one artifact",
+  Array.isArray(allowedJson.artifacts) && allowedJson.artifacts.length === 1,
+  JSON.stringify(allowedJson.artifacts));
 
 const ledger = await get("/ledger");
 const ledgerHtml = await ledger.text();
@@ -237,6 +249,47 @@ const ledgerLines = ledgerText.trim().split("\n").filter(Boolean);
 check("GET /ledger.jsonl = 200", ledgerJsonl.status === 200, "status=" + ledgerJsonl.status);
 check("ledger.jsonl has one line per event id", ledgerLines.length === 1, "lines=" + ledgerLines.length);
 check("ledger.jsonl row keeps the slug", JSON.parse(ledgerLines[0]).slug === "video-pack-roman-concrete");
+
+/* ------------------------------------------------ subscription entitlement */
+
+const subscriptionBody = JSON.stringify({
+  type: "subscription.active",
+  data: {
+    id: "153e6e7a-24f4-48ea-b91d-500eeb7bbf8d",
+    status: "active",
+    current_period_end: "2026-10-28T19:08:54.174055Z",
+    product_id: "a000e958-094a-4662-b79f-aeace122904a",
+    metadata: { slug: "studio-monthly-4" },
+  },
+});
+const subscriptionWebhook = await postWebhook(subscriptionBody, sign(subscriptionBody, "msg_monthly"));
+check("subscription webhook = 200", subscriptionWebhook.status === 200, "status=" + subscriptionWebhook.status);
+
+const monthly = await get("/download/studio-monthly-4");
+const monthlyJson = await monthly.json();
+check("/download studio-monthly-4 = 200", monthly.status === 200, "status=" + monthly.status);
+check("monthly download carries product_id (not null)",
+  monthlyJson.product_id === "a000e958-094a-4662-b79f-aeace122904a", "product_id=" + monthlyJson.product_id);
+check("monthly download carries the price",
+  monthlyJson.price && monthlyJson.price.amount === 2900 && monthlyJson.price.currency === "usd",
+  JSON.stringify(monthlyJson.price));
+check("monthly download has no single manifest but an empty artifacts array",
+  monthlyJson.manifest === undefined && Array.isArray(monthlyJson.artifacts) && monthlyJson.artifacts.length === 0,
+  "manifest=" + JSON.stringify(monthlyJson.manifest) + " artifacts=" + JSON.stringify(monthlyJson.artifacts));
+check("monthly download carries an explicit note",
+  typeof monthlyJson.note === "string" && monthlyJson.note.length > 10, monthlyJson.note);
+check("monthly download carries the subscription block",
+  monthlyJson.subscription
+    && monthlyJson.subscription.id === "153e6e7a-24f4-48ea-b91d-500eeb7bbf8d"
+    && monthlyJson.subscription.status === "active"
+    && monthlyJson.subscription.current_period_end === "2026-10-28T19:08:54.174055Z",
+  JSON.stringify(monthlyJson.subscription));
+
+const unentitled = await get("/download/caption-kit");
+const unentitledJson = await unentitled.json();
+check("unentitled slug stays 403", unentitled.status === 403, "status=" + unentitled.status);
+check("unentitled body is exactly not_entitled",
+  JSON.stringify(unentitledJson) === JSON.stringify({ error: "not_entitled" }), JSON.stringify(unentitledJson));
 
 /* --------------------------------------------------------------- checkout */
 
