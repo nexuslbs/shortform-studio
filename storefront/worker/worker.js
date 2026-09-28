@@ -773,7 +773,7 @@ const CSS = `
   input:focus { outline: none; border-color: var(--border-accent); }
   .btn {
     display: inline-block; background: linear-gradient(135deg, var(--accent), var(--accent-cyan));
-    color: #0b1020; font-weight: 700; border: 0; border-radius: 10px; padding: 11px 18px;
+    color: #0d1321; font-weight: 700; border: 0; border-radius: 10px; padding: 11px 18px;
     cursor: pointer; font-size: 15px;
   }
   .btn.ghost { background: transparent; color: var(--text-accent); border: 1px solid var(--border-accent); }

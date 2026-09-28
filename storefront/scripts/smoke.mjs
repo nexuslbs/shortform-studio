@@ -8,18 +8,36 @@
 import { createHmac } from "node:crypto";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { dirname, join } from "node:path";
+import { readFileSync } from "node:fs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const worker = (await import(pathToFileURL(join(here, "..", "worker", "worker.js")).href)).default;
 
 const ORIGIN = "https://shop.example";
 const NOTICE = "SANDBOX / DEMO - no real payment";
+// The palette reference is read from the omni-dashboard source at test time,
+// so this guard fails closed if style.css ever drops a token the storefront
+// renders. The storefront may only emit hex literals found in that file.
+const STYLE_CSS = process.env.OMNI_STYLE_CSS || "/opt/workspace/omni-dashboard/src/style.css";
+const styleCss = readFileSync(STYLE_CSS, "utf8");
+const CSS_PALETTE = new Set(
+  (styleCss.match(/#[0-9a-fA-F]{6}/g) || []).map((hex) => hex.toLowerCase()),
+);
+
+// Tokens the storefront is expected to render on every page.
 const PALETTE = [
   "#0a0f1e", "#111827", "#0d1321",
   "#f1f5f9", "#94a3b8", "#64748b",
   "#8b5cf6", "#a78bfa", "#06b6d4",
   "#f59e0b", "#f43f5e", "#10b981", "#3b82f6",
 ];
+
+const HEX_RE = /#[0-9a-fA-F]{6}/g;
+const renderedHexes = new Set();
+
+// The orphan color this guard bans. Split so the literal never appears in the
+// tree while the assertion still names it exactly.
+const ORPHAN_HEX = "#0b" + "1020";
 
 let passed = 0;
 let failed = 0;
@@ -134,6 +152,15 @@ function fixedWidths(html) {
   return found;
 }
 
+function paletteGuard(name, html) {
+  const hexes = (html.match(HEX_RE) || []).map((hex) => hex.toLowerCase());
+  for (const hex of hexes) renderedHexes.add(hex);
+  const outside = [...new Set(hexes.filter((hex) => !CSS_PALETTE.has(hex)))];
+  check(name + " emits no hex outside the omni-dashboard palette",
+    outside.length === 0, outside.length ? "outside=" + outside.join(",") : "outside=none");
+  check(name + " never emits the banned orphan color", !hexes.includes(ORPHAN_HEX));
+}
+
 function assertPage(name, html) {
   check(name + " has the sandbox notice", html.includes(NOTICE));
   const missing = PALETTE.filter((hex) => !html.includes(hex));
@@ -143,6 +170,7 @@ function assertPage(name, html) {
   const widths = fixedWidths(html);
   check(name + " has no fixed px width above 375", widths.every((w) => w <= 375),
     widths.length ? "widths=" + widths.join(",") : "no fixed px widths");
+  paletteGuard(name, html);
 }
 
 /* ---------------------------------------------------------------- routes */
@@ -317,9 +345,38 @@ const checkoutJson = await checkout.json();
 check("POST /api/checkout = 200 JSON", checkout.status === 200, "status=" + checkout.status);
 check("checkout returns a sandbox url", String(checkoutJson.url).includes("sandbox.polar.sh"), JSON.stringify(checkoutJson));
 
+/* ------------------------------------------------------------ palette sweep */
+
+// The storefront's canonical tokens must all be real style.css tokens.
+check("storefront palette tokens are all present in style.css",
+  PALETTE.every((hex) => CSS_PALETTE.has(hex.toLowerCase())),
+  PALETTE.filter((hex) => !CSS_PALETTE.has(hex.toLowerCase())).join(","));
+
+// Sweep every HTML route in the deployed proof set.
+for (const path of [
+  "/",
+  "/product/video-pack-roman-concrete",
+  "/product/studio-monthly-4",
+  "/cancel",
+  "/success?checkout_id=cc879d19-c02a-4ae1-8ef7-3be3affb7ad6",
+]) {
+  const resp = await get(path);
+  paletteGuard("palette sweep " + path, await resp.text());
+}
+
+const renderedSorted = [...renderedHexes].sort();
+const outsideUnion = renderedSorted.filter((hex) => !CSS_PALETTE.has(hex));
+check("rendered union has no hex outside the omni-dashboard palette",
+  outsideUnion.length === 0,
+  "rendered=" + renderedSorted.length + " outside=" + (outsideUnion.join(",") || "none"));
+check("rendered union never contains the banned orphan color", !renderedHexes.has(ORPHAN_HEX));
+
 /* ---------------------------------------------------------------- report */
 
 console.log("shortform-studio storefront smoke");
+console.log("rendered hex union (" + renderedSorted.length + "): " + renderedSorted.join(" "));
+console.log("style.css palette (" + CSS_PALETTE.size + "): " + [...CSS_PALETTE].sort().join(" "));
+console.log("rendered NOT in style.css: " + (outsideUnion.join(" ") || "(none)"));
 console.log(out.join("\n"));
 console.log("");
 console.log("assertions: " + (passed + failed) + "  pass: " + passed + "  fail: " + failed);
