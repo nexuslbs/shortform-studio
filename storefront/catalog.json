@@ -16,7 +16,7 @@
       "amount": 1900,
       "currency": "usd",
       "recurring_interval": null,
-      "product_id": null,
+      "product_id": "805fafde-0825-4732-8817-21d0bd412502",
       "artifact": {
         "path": "out/roman-concrete/video.mp4",
         "bytes": 2404763,
@@ -33,7 +33,7 @@
       "amount": 2900,
       "currency": "usd",
       "recurring_interval": null,
-      "product_id": null
+      "product_id": "d7c598b6-bb7c-4770-8db3-a894f488a1dc"
     },
     {
       "slug": "caption-kit",
@@ -42,7 +42,7 @@
       "amount": 900,
       "currency": "usd",
       "recurring_interval": null,
-      "product_id": null
+      "product_id": "a1db888e-5b82-435e-82c1-3e3a80a6acb2"
     },
     {
       "slug": "studio-monthly-4",
@@ -51,7 +51,7 @@
       "amount": 2900,
       "currency": "usd",
       "recurring_interval": "month",
-      "product_id": null
+      "product_id": "a000e958-094a-4662-b79f-aeace122904a"
     }
   ]
 }

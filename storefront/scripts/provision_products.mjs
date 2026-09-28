@@ -40,6 +40,9 @@ async function api(path, init = {}) {
     headers: {
       Accept: "application/json",
       Authorization: "Bearer " + key,
+      // Cloudflare in front of the Polar API rejects the default Node UA
+      // (error 1010); present a curl-compatible UA.
+      "User-Agent": "curl/8.5.0",
       ...(init.headers || {}),
     },
   });
@@ -107,7 +110,7 @@ for (const item of catalog.items || []) {
     console.error("CREATE FAIL " + item.slug + " HTTP " + response.status);
     process.exit(1);
   }
-  console.log("CREATE " + item.slug + " -> " + data.id);
+  console.log("CREATE " + item.slug + " -> " + data.id + " (HTTP " + response.status + ")");
   ids[item.slug] = data.id;
   created += 1;
 }
