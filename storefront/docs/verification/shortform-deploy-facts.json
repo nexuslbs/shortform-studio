@@ -1,0 +1,40 @@
+{
+  "repo_sha": "9321c56750b9a6da3f8a6b8825eb84c5a47c7892",
+  "catalog_product_ids": [
+    "805fafde-0825-4732-8817-21d0bd412502",
+    "d7c598b6-bb7c-4770-8db3-a894f488a1dc",
+    "a1db888e-5b82-435e-82c1-3e3a80a6acb2",
+    "a000e958-094a-4662-b79f-aeace122904a"
+  ],
+  "step1_node_check_exit": 0,
+  "step1_catalog_missing": 0,
+  "kv_namespace_id": "29bc2131cefe46c2a4125c199d83197a",
+  "cloudflare_account_id": "654cd46bfed71e66fdc713e1fa445065",
+  "deploy_exit": 0,
+  "worker_url": "https://shortform-studio-storefront.omnistack.workers.dev",
+  "polar_api_key_secret_exit": 0,
+  "webhook_endpoint_id": "3d934b6a-6f86-4088-9a52-7a568e0a2d26",
+  "webhook_create_http": 201,
+  "webhook_secret_length": 50,
+  "webhook_format": "raw",
+  "webhook_format_standard_http": 422,
+  "polar_webhook_secret_exit": 0,
+  "http_codes": {
+    "/": "200",
+    "/product/video-pack-roman-concrete": "200",
+    "/catalog.json": "200",
+    "/cancel": "200",
+    "/healthz": "200"
+  },
+  "http_sizes": {
+    "/": 7665,
+    "/product/video-pack-roman-concrete": 7382,
+    "/catalog.json": 2194,
+    "/cancel": 5904,
+    "/healthz": 187
+  },
+  "notice_text": "present",
+  "commit_sha": "e49b0ad428922f85a13a6e1c9dd60a1701823c86",
+  "commit_exit": 0,
+  "push_exit": 0
+}
