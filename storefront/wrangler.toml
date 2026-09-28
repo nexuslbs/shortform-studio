@@ -1,0 +1,18 @@
+name = "shortform-studio-storefront"
+main = "worker/worker.js"
+compatibility_date = "2026-09-01"
+workers_dev = true
+
+[vars]
+POLAR_API_BASE = "https://sandbox-api.polar.sh/v1"
+
+# Durable ledger: one row per verified webhook event, keyed by webhook-id.
+# The deploy unit replaces the placeholder with the fresh namespace id from
+#   npx wrangler kv namespace create LEDGER
+[[kv_namespaces]]
+binding = "LEDGER"
+id = "REPLACE_WITH_LEDGER_KV_ID"
+
+# Secrets are set out-of-band, never from this repo:
+#   npx wrangler secret put POLAR_API_KEY
+#   npx wrangler secret put POLAR_WEBHOOK_SECRET

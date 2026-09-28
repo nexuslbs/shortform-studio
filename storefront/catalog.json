@@ -1,0 +1,57 @@
+{
+  "catalog_version": 1,
+  "pipeline": "shortform-studio",
+  "storefront": "shortform-studio-polar-sandbox",
+  "provider": "polar",
+  "provider_env": "sandbox",
+  "provider_api_base": "https://sandbox-api.polar.sh/v1",
+  "notice": "SANDBOX / DEMO - no real payment",
+  "currency": "usd",
+  "metadata_source": "shortform-studio-mvp-catalog",
+  "items": [
+    {
+      "slug": "video-pack-roman-concrete",
+      "name": "ShortForm Studio Video Pack: Roman Concrete",
+      "description": "The rendered 9:16 short How Roman Concrete Survived 2000 Years: H.264 1080x1920 with AAC audio, burnt captions, plus SRT, description and metadata. Deterministic render, QA 17/17 PASS.",
+      "amount": 1900,
+      "currency": "usd",
+      "recurring_interval": null,
+      "product_id": null,
+      "artifact": {
+        "path": "out/roman-concrete/video.mp4",
+        "bytes": 2404763,
+        "duration_s": 37.5,
+        "resolution": "1080x1920",
+        "qa": "17/17",
+        "sha256": "9ce0e04ef5fe79fb27ec10fd2eb16efedc024b9dbe48d1c62827b45f8dfff206"
+      }
+    },
+    {
+      "slug": "shorts-bundle-3",
+      "name": "ShortForm Studio 3-Pack",
+      "description": "Three policy-checked 9:16 shorts rendered and QA-gated, each with captions, title, description and metadata.",
+      "amount": 2900,
+      "currency": "usd",
+      "recurring_interval": null,
+      "product_id": null
+    },
+    {
+      "slug": "caption-kit",
+      "name": "ShortForm Caption + Metadata Kit",
+      "description": "The caption, title, description and metadata kit for one short, ready to paste into the channel.",
+      "amount": 900,
+      "currency": "usd",
+      "recurring_interval": null,
+      "product_id": null
+    },
+    {
+      "slug": "studio-monthly-4",
+      "name": "ShortForm Studio Monthly - 4 videos/month",
+      "description": "Four policy-checked shorts per month with captions, metadata and the QA report for each render.",
+      "amount": 2900,
+      "currency": "usd",
+      "recurring_interval": "month",
+      "product_id": null
+    }
+  ]
+}
