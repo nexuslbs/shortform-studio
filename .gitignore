@@ -33,3 +33,6 @@ data/metrics/
 # Editor / OS noise
 .DS_Store
 *.swp
+
+# Billing ledger (append-only runtime data)
+ledger/*.jsonl

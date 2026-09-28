@@ -6,6 +6,7 @@ import argparse
 import sys
 
 from . import __version__
+from .billing_cli import add_billing_subparser
 from .measure import DEFAULT_MOCK_BASE, REAL_API_BASE as MEASURE_API_BASE, measure
 from .produce import produce
 from .publish import PRIVACY_CHOICES, REAL_API_BASE as PUBLISH_API_BASE, publish
@@ -49,6 +50,8 @@ def build_parser() -> argparse.ArgumentParser:
     p_meas.add_argument("--api-base", default=None,
                         help="override the API host (default: real Google host)")
     p_meas.set_defaults(func=_cmd_measure)
+
+    add_billing_subparser(sub)
 
     return parser
 
